@@ -1,30 +1,31 @@
 const jwt = require("jsonwebtoken");
 
-// 🔐 Verify Token Middleware
 const verifyToken = (req, res, next) => {
-  const token = req.headers["authorization"];
+  const authHeader = req.header("Authorization");
 
-  if (!token) {
-    return res.status(403).json({ message: "No token provided" });
+  if (!authHeader) {
+    return res.status(401).json({ msg: "No token, access denied" });
   }
 
   try {
-    const decoded = jwt.verify(token, "SECRET_KEY");
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ msg: "Token is not valid" });
   }
 };
 
-// 👮 Role-Based Access Control
-const authorizeRoles = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Access denied" });
-    }
-    next();
-  };
+const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    return res.status(403).json({ msg: "Access denied for this role" });
+  }
+
+  next();
 };
 
 module.exports = { verifyToken, authorizeRoles };

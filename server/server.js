@@ -21,7 +21,6 @@ mongoose
 const redisClient = redis.createClient({
   url: redisUrl,
   socket: {
-    // Avoid endless reconnect loops in local dev when Redis is not running.
     reconnectStrategy: () => false
   }
 });
@@ -42,7 +41,7 @@ async function connectRedis() {
 connectRedis();
 
 app.get("/", (req, res) => {
-  res.send("Working");
+  res.send("Backend is running");
 });
 
 app.use("/api/auth", require("./routes/auth"));
@@ -71,5 +70,5 @@ function startServer(initialPort) {
 
   tryListen();
 }
-startServer(port);
 
+startServer(port);

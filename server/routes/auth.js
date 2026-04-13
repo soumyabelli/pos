@@ -1,86 +1,111 @@
 const express = require("express");
-const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-
 const { verifyToken, authorizeRoles } = require("../middleware/authMiddleware");
 
-// ================= REGISTER =================
+const router = express.Router();
+
+const createToken = (user) =>
+  jwt.sign(
+    { id: user._id, role: user.role, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    if (!name || !email || !password) {
+      return res.status(400).json({ msg: "Name, email and password are required" });
     }
 
-    // Hash password
-    const hashed = await bcrypt.hash(password, 10);
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
 
-    // Create user
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       name,
       email,
-      password: hashed,
-      role: role || "cashier" // default role
+      password: hashedPassword,
+      role: "cashier"
     });
 
-    res.json({ message: "User registered successfully", user });
+    const token = createToken(user);
 
+    res.status(201).json({
+      msg: "User registered successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ msg: err.message });
   }
 });
 
-
-// ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check user exists
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    // Check password
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ message: "Wrong password" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    // Generate token
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "SECRET_KEY",
-      { expiresIn: "1d" }
-    );
+    const token = createToken(user);
 
     res.json({
-      message: "Login successful",
-      token
+      msg: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
     });
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ msg: err.message });
   }
 });
 
-
-// ================= PROTECTED ROUTES =================
-
-// Only ADMIN
-router.get("/admin", verifyToken, authorizeRoles("admin"), (req, res) => {
-  res.json({ message: "Welcome Admin" });
+router.get("/dashboard", verifyToken, (req, res) => {
+  res.json({
+    message: "Welcome to dashboard",
+    user: req.user
+  });
 });
 
-// Only MANAGER
-router.get("/manager", verifyToken, authorizeRoles("manager"), (req, res) => {
-  res.json({ message: "Welcome Manager" });
+router.get("/admin", verifyToken, authorizeRoles("admin"), (req, res) => {
+  res.json({
+    message: "Admin access granted",
+    user: req.user
+  });
+});
+
+router.get("/manager", verifyToken, authorizeRoles("admin", "manager"), (req, res) => {
+  res.json({
+    message: "Manager access granted",
+    user: req.user
+  });
 });
 
 module.exports = router;
