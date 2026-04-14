@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import "../index.css"; 
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -24,21 +25,26 @@ export default function Navbar() {
   };
 
   return (
-    <div className="bg-gray-900 text-white p-4 flex justify-between items-center">
-      <h1 className="text-xl font-bold">POS System</h1>
+    <nav className="navbar-container">
+      <div className="navbar-logo">
+        <span className="logo-icon">✨</span>
+        <span className="logo-text">Urban Crust</span>
+      </div>
 
-      <div className="flex items-center gap-4">
-        <span className="bg-gray-700 px-3 py-1 rounded">
-          {(role || "USER").toUpperCase()}
-        </span>
+      <div className="navbar-actions">
+        {role && (
+          <span className="user-role-badge">
+            {(role || "USER").toUpperCase()}
+          </span>
+        )}
 
         <button
           onClick={handleLogout}
-          className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
+          className="btn-danger"
         >
           Logout
         </button>
       </div>
-    </div>
+    </nav>
   );
 }
