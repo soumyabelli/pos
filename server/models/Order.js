@@ -1,9 +1,21 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  items: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "OrderItem"
+    }
+  ],
   totalAmount: Number,
-  createdAt: { type: Date, default: Date.now }
-});
+  store: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Store"
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+}, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);
