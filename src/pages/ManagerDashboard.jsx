@@ -65,34 +65,98 @@ export default function ManagerDashboard() {
           />
         </div>
 
-        {/* Placeholders for tomorrow's work */}
+        {/* Charts and Orders Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 relative h-[400px] rounded-2xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-            <div className="h-16 w-16 bg-neutral-800/50 rounded-full flex items-center justify-center text-2xl mb-4 border border-neutral-700">
-              📊
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Revenue Analytics Chart</h3>
-            <p className="text-neutral-500 max-w-sm mb-6">
-              Interactive sales graphs, heatmap for busy hours, and item performance charts will be implemented here.
-            </p>
-            <div className="px-4 py-2 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full text-xs font-semibold tracking-wider uppercase mb-8 z-10">
-              Scheduled for Tomorrow
+          {/* Revenue Analytics Chart */}
+          <div className="lg:col-span-2 rounded-2xl border border-neutral-800 bg-neutral-900/40 backdrop-blur-md p-6 flex flex-col h-[420px]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white tracking-tight">Revenue Analytics</h3>
+              <select className="bg-neutral-800 border border-neutral-700 text-sm text-neutral-300 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer">
+                <option>This Week</option>
+                <option>This Month</option>
+                <option>This Year</option>
+              </select>
             </div>
             
-            {/* Decorative background grid */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] z-0"></div>
+            <div className="flex-1 flex items-end gap-2 md:gap-4 mt-2 border-b border-neutral-800 pb-2 relative">
+              {/* Y axis labels */}
+              <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-neutral-500 font-medium h-full pb-8">
+                <span>$5k</span>
+                <span>$4k</span>
+                <span>$3k</span>
+                <span>$2k</span>
+                <span>$1k</span>
+              </div>
+              
+              <div className="ml-10 flex-1 flex items-end justify-between gap-1 sm:gap-2 h-full pb-6 relative">
+                 {/* Decorative horizontal lines */}
+                 <div className="absolute inset-x-0 bottom-6 top-1 flex flex-col justify-between pointer-events-none">
+                   <div className="w-full border-b border-neutral-800/50"></div>
+                   <div className="w-full border-b border-neutral-800/50"></div>
+                   <div className="w-full border-b border-neutral-800/50"></div>
+                   <div className="w-full border-b border-neutral-800/50"></div>
+                 </div>
+
+                 {/* Bars */}
+                 {[
+                   {day: 'Mon', val: 40}, {day: 'Tue', val: 65}, {day: 'Wed', val: 45},
+                   {day: 'Thu', val: 80}, {day: 'Fri', val: 100}, {day: 'Sat', val: 110}, {day: 'Sun', val: 90}
+                 ].map((item, i) => (
+                    <div key={i} className="flex flex-col items-center flex-1 group h-full z-10">
+                      <div className="w-full flex justify-center h-full items-end pb-2 relative">
+                        <div 
+                          style={{ height: `${item.val}%` }} 
+                          className="w-full max-w-[48px] bg-gradient-to-t from-orange-500/20 to-orange-500/80 rounded-t-lg group-hover:to-orange-400 group-hover:from-orange-400/40 transition-all duration-300 relative cursor-pointer shadow-[0_0_15px_rgba(249,115,22,0)] group-hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                        >
+                          <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-neutral-800 text-white text-xs py-1.5 px-2.5 rounded-lg shadow-lg transition-all duration-200 whitespace-nowrap border border-neutral-700 pointer-events-none">
+                            ${item.val * 30}
+                            {/* Tooltip triangle */}
+                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-800 rotate-45 border-r border-b border-neutral-700"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-xs text-neutral-400 font-medium absolute bottom-0">{item.day}</span>
+                    </div>
+                 ))}
+              </div>
+            </div>
           </div>
           
-          <div className="relative rounded-2xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center h-[400px]">
-            <div className="h-16 w-16 bg-neutral-800/50 rounded-full flex items-center justify-center text-2xl mb-4 border border-neutral-700">
-              📋
+          {/* Recent Orders List */}
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 backdrop-blur-md p-6 flex flex-col h-[420px]">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white tracking-tight">Recent Orders</h3>
+              <button className="text-sm text-rose-400 hover:text-rose-300 transition-colors font-medium cursor-pointer">View All</button>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Recent Transactions</h3>
-            <p className="text-neutral-500 text-sm max-w-[200px] mb-6">
-              Live feed of incoming orders and payment status.
-            </p>
-            <div className="px-4 py-2 bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full text-xs font-semibold tracking-wider uppercase">
-              Scheduled for Tomorrow
+            
+            <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+              {[
+                { id: '#1049', time: 'Just now', items: '2x Margherita, 1x Cola', amount: '$42.50', status: 'Preparing' },
+                { id: '#1048', time: '15 mins ago', items: '1x Pepperoni, Garlic Bread', amount: '$36.00', status: 'Ready' },
+                { id: '#1047', time: '32 mins ago', items: '3x Veggie Supreme', amount: '$75.00', status: 'Delivered' },
+                { id: '#1046', time: '1 hour ago', items: '1x BBQ Chicken', amount: '$28.50', status: 'Delivered' },
+                { id: '#1045', time: '2 hours ago', items: '2x Hawaiian, 2x Sprite', amount: '$54.00', status: 'Delivered' },
+              ].map((order, i) => (
+                <div key={i} className="p-3.5 rounded-xl bg-neutral-800/30 border border-neutral-800/50 hover:bg-neutral-800/80 transition-colors flex justify-between items-center group cursor-pointer">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-bold text-white">{order.id}</span>
+                      <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${
+                        order.status === 'Preparing' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                        order.status === 'Ready' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                        'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-400 truncate max-w-[180px]">{order.items}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-white group-hover:text-rose-400 transition-colors">{order.amount}</p>
+                    <p className="text-[10px] text-neutral-500 mt-0.5">{order.time}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
