@@ -15,7 +15,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-    { name: "POS", icon: ShoppingCart, path: "/pos" },
+    { name: "POS", icon: ShoppingCart, path: "/admin/pos" },
     { name: "Products", icon: Box, path: null },
     { name: "Inventory", icon: Box, path: null },
     { name: "Orders", icon: ClipboardList, path: null },
@@ -60,7 +60,7 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <button onClick={() => navigate("/pos")} className="new-sale-btn">
+        <button onClick={() => navigate("/admin/pos")} className="new-sale-btn">
           <span className="plus-chip">+</span>
           New Sale
         </button>
