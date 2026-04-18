@@ -3,24 +3,51 @@ import Navbar from "../components/Navbar";
 import "../index.css"; // Ensure styles are pulled in
 
 const MOCK_PRODUCTS = [
-  { id: 1, name: "Espresso", price: 3.5, category: "Coffee", emoji: "☕" },
-  { id: 2, name: "Latte", price: 4.5, category: "Coffee", emoji: "🍵" },
-  { id: 3, name: "Cappuccino", price: 4.5, category: "Coffee", emoji: "☕" },
-  { id: 4, name: "Croissant", price: 2.5, category: "Food", emoji: "🥐" },
-  { id: 5, name: "Blueberry Muffin", price: 3.0, category: "Food", emoji: "🧁" },
-  { id: 6, name: "Sparkling Water", price: 2.0, category: "Drinks", emoji: "🥤" },
-  { id: 7, name: "Iced Tea", price: 3.5, category: "Drinks", emoji: "🍹" },
-  { id: 8, name: "Sandwich", price: 6.5, category: "Food", emoji: "🥪" },
-  { id: 9, name: "Chocolate Cake", price: 5.0, category: "Dessert", emoji: "🍰" },
-  { id: 10, name: "Macaron", price: 2.5, category: "Dessert", emoji: "🍪" },
+  { id: 1, name: "Espresso", price: 3.5, category: "Coffee", emoji: "☕", barcode: "1001" },
+  { id: 2, name: "Latte", price: 4.5, category: "Coffee", emoji: "🍵", barcode: "1002" },
+  { id: 3, name: "Cappuccino", price: 4.5, category: "Coffee", emoji: "☕", barcode: "1003" },
+  { id: 4, name: "Croissant", price: 2.5, category: "Food", emoji: "🥐", barcode: "1004" },
+  { id: 5, name: "Blueberry Muffin", price: 3.0, category: "Food", emoji: "🧁", barcode: "1005" },
+  { id: 6, name: "Sparkling Water", price: 2.0, category: "Drinks", emoji: "🥤", barcode: "1006" },
+  { id: 7, name: "Iced Tea", price: 3.5, category: "Drinks", emoji: "🍹", barcode: "1007" },
+  { id: 8, name: "Sandwich", price: 6.5, category: "Food", emoji: "🥪", barcode: "1008" },
+  { id: 9, name: "Chocolate Cake", price: 5.0, category: "Dessert", emoji: "🍰", barcode: "1009" },
+  { id: 10, name: "Macaron", price: 2.5, category: "Dessert", emoji: "🍪", barcode: "1010" },
 ];
 
 const CATEGORIES = ["All", "Coffee", "Drinks", "Food", "Dessert"];
+
+const modalOverlayStyle = {
+  position: 'fixed',
+  top: 0, left: 0, right: 0, bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  backdropFilter: 'blur(4px)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 1000
+};
+
+const modalContentStyle = {
+  background: 'var(--bg-card, #1e1e2d)',
+  padding: '32px',
+  borderRadius: '16px',
+  border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+  color: 'var(--text-primary, #fff)',
+  width: '400px',
+  textAlign: 'center',
+  boxShadow: '0 8px 32px rgba(0,0,0,0.5)'
+};
 
 export default function POS() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [cart, setCart] = useState([]);
+  const [discountType, setDiscountType] = useState("none"); // "none", "percent", "fixed"
+  const [discountValue, setDiscountValue] = useState(0);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
 
   // Filter products based on search and category
   const filteredProducts = useMemo(() => {
@@ -55,12 +82,64 @@ export default function POS() {
     });
   };
 
-  const clearCart = () => setCart([]);
+  const removeFromCart = (id) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    setDiscountType("none");
+    setDiscountValue(0);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && search.trim() !== '') {
+      const scannedProduct = MOCK_PRODUCTS.find(p => p.barcode === search.trim() || p.id.toString() === search.trim());
+      if (scannedProduct) {
+        addToCart(scannedProduct);
+        setSearch("");
+      }
+    }
+  };
 
   // Calculations
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + tax;
+  
+  let discountAmount = 0;
+  if (discountType === "percent") {
+    discountAmount = subtotal * (discountValue / 100);
+  } else if (discountType === "fixed") {
+    discountAmount = Math.min(discountValue, subtotal);
+  }
+
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+  const tax = discountedSubtotal * 0.08; // 8% tax
+  const total = discountedSubtotal + tax;
+
+  const handleCheckoutClick = () => {
+    setIsCheckoutOpen(true);
+  };
+
+  const handlePaymentSelect = (method) => {
+    const orderId = `#ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    setReceiptData({
+      orderId,
+      date: new Date().toLocaleString(),
+      items: [...cart],
+      subtotal,
+      discountAmount,
+      tax,
+      total,
+      method
+    });
+    setIsCheckoutOpen(false);
+    setIsInvoiceOpen(true);
+  };
+
+  const closeAndClear = () => {
+    setIsInvoiceOpen(false);
+    clearCart();
+  };
 
   return (
     <div className="pos-container">
@@ -76,9 +155,10 @@ export default function POS() {
           <input
             type="text"
             className="pos-search"
-            placeholder="Search products..."
+            placeholder="Search products or scan barcode..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </div>
 
@@ -139,8 +219,11 @@ export default function POS() {
                   <button className="qty-btn" onClick={() => updateQty(item.id, 1)}>+</button>
                 </div>
                 
-                <div className="item-total">
+                <div className="item-total" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   ${(item.price * item.qty).toFixed(2)}
+                  <button className="remove-btn" onClick={() => removeFromCart(item.id)} style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '18px', padding: 0 }} title="Remove item">
+                    ✕
+                  </button>
                 </div>
               </div>
             ))
@@ -148,10 +231,38 @@ export default function POS() {
         </div>
 
         <div className="cart-footer">
+          <div className="discount-controls" style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <select 
+              value={discountType} 
+              onChange={(e) => setDiscountType(e.target.value)}
+              style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+            >
+              <option value="none">No Discount</option>
+              <option value="percent">% Off</option>
+              <option value="fixed">$ Off</option>
+            </select>
+            {discountType !== "none" && (
+              <input 
+                type="number" 
+                value={discountValue} 
+                onChange={(e) => setDiscountValue(Number(e.target.value))}
+                placeholder="Value"
+                style={{ width: '80px', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                min="0"
+              />
+            )}
+          </div>
+
           <div className="totals-row">
             <span>Subtotal</span>
             <span>${subtotal.toFixed(2)}</span>
           </div>
+          {discountAmount > 0 && (
+            <div className="totals-row" style={{ color: 'var(--success-color)' }}>
+              <span>Discount</span>
+              <span>-${discountAmount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="totals-row">
             <span>Tax (8%)</span>
             <span>${tax.toFixed(2)}</span>
@@ -161,7 +272,7 @@ export default function POS() {
             <span>${total.toFixed(2)}</span>
           </div>
 
-          <button className="checkout-btn" disabled={cart.length === 0}>
+          <button className="checkout-btn" disabled={cart.length === 0} onClick={handleCheckoutClick}>
             Charge ${total.toFixed(2)}
           </button>
           
@@ -178,6 +289,87 @@ export default function POS() {
           </button>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {isCheckoutOpen && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle}>
+            <h2>Select Payment Method</h2>
+            <h1 style={{ margin: '20px 0', color: 'var(--primary-color)' }}>${total.toFixed(2)}</h1>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '20px' }}>
+              <button 
+                onClick={() => handlePaymentSelect('Cash')}
+                style={{ padding: '12px 24px', borderRadius: '8px', background: 'var(--primary-color)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                💵 Cash
+              </button>
+              <button 
+                onClick={() => handlePaymentSelect('Card')}
+                style={{ padding: '12px 24px', borderRadius: '8px', background: 'var(--primary-color)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                💳 Card
+              </button>
+              <button 
+                onClick={() => handlePaymentSelect('UPI')}
+                style={{ padding: '12px 24px', borderRadius: '8px', background: 'var(--primary-color)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                📱 UPI
+              </button>
+            </div>
+            <button 
+              style={{ marginTop: '24px', width: '100%', padding: '12px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '8px', cursor: 'pointer' }} 
+              onClick={() => setIsCheckoutOpen(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Modal */}
+      {isInvoiceOpen && receiptData && (
+        <div style={modalOverlayStyle}>
+          <div style={{...modalContentStyle, width: '350px'}}>
+            <div style={{ textAlign: 'center', borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px', marginBottom: '16px' }}>
+              <h2>Urban Crust</h2>
+              <p style={{ color: 'var(--text-muted)' }}>Receipt {receiptData.orderId}</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{receiptData.date}</p>
+            </div>
+            
+            <div style={{ maxHeight: '250px', overflowY: 'auto', marginBottom: '16px', textAlign: 'left' }}>
+              {receiptData.items.map(item => (
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
+                  <span>{item.qty}x {item.name}</span>
+                  <span>${(item.price * item.qty).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '16px', fontSize: '0.9rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span>Subtotal</span><span>${receiptData.subtotal.toFixed(2)}</span>
+              </div>
+              {receiptData.discountAmount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', color: 'var(--success-color)' }}>
+                  <span>Discount</span><span>-${receiptData.discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span>Tax (8%)</span><span>${receiptData.tax.toFixed(2)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.2rem', marginBottom: '16px' }}>
+                <span>Total</span><span>${receiptData.total.toFixed(2)}</span>
+              </div>
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '16px' }}>
+                Paid via {receiptData.method}
+              </div>
+            </div>
+
+            <button 
+              className="btn-primary glow" 
+              style={{ width: '100%', marginTop: '24px', padding: '12px', borderRadius: '8px', border: 'none', background: 'var(--primary-color)', color: '#fff', cursor: 'pointer', fontWeight: 'bold' }} 
+              onClick={closeAndClear}>
+              Done / Print
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
