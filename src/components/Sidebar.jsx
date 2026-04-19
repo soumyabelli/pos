@@ -16,12 +16,13 @@ export default function Sidebar() {
   const menuItems = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "POS", icon: ShoppingCart, path: "/admin/pos" },
-    { name: "Products", icon: Box, path: null },
-    { name: "Inventory", icon: Box, path: null },
-    { name: "Orders", icon: ClipboardList, path: null },
-    { name: "Reports", icon: BarChart3, path: null },
-    { name: "Users", icon: Users, path: null },
-    { name: "Settings", icon: Settings, path: null },
+    { name: "Products", icon: Box, path: "/admin/products" },
+    { name: "Inventory", icon: Box, path: "/admin/inventory" },
+    { name: "Orders", icon: ClipboardList, path: "/admin/orders" },
+    { name: "Reports", icon: BarChart3, path: "/admin/reports" },
+    { name: "Users", icon: Users, path:"/admin/users"},
+    { name: "Settings", icon: Settings, path: "/admin/settings" },
+    
   ];
 
   return (

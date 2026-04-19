@@ -4,6 +4,12 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import POS from "./pages/POS";
 import AdminPOS from "./pages/AdminPOS";
+import ProductManagement from "./pages/ProductManagement";
+import InventoryManagement from "./pages/InventoryManagement";
+import OrderManagement from "./pages/OrderManagement";
+import ReportsManagement from "./pages/ReportsManagement";
+import UserManagement from "./pages/UserManagement";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -13,7 +19,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/pos" element={<AdminPOS />} />
+        <Route path="/admin/products" element={<ProductManagement />} />
         <Route path="/manager" element={<ManagerDashboard />} />
+        <Route path="/admin/inventory" element={<InventoryManagement />} />
+        <Route path="/admin/orders" element={<OrderManagement />} />
+        <Route path="/admin/reports" element={<ReportsManagement />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/settings" element={<Settings />} />
         <Route path="/pos" element={<POS />} />
       </Routes>
     </Router>

@@ -1,79 +1,52 @@
-import { useNavigate } from "react-router-dom";
-import { Bell, Search } from "lucide-react";
+import { useState } from "react";
+import { Search, Bell, Settings } from "lucide-react";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-
-  const token = localStorage.getItem("token");
-
-  let role = "";
-  let name = "User";
-
-  if (token) {
-    try {
-      const payload = token.split(".")[1];
-      if (payload) {
-        const decoded = JSON.parse(atob(payload));
-        role = decoded?.role || "";
-        name = decoded?.name || "User";
-      }
-    } catch {
-      role = "";
-    }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <div className="flex justify-between items-center bg-white px-6 py-4 shadow-sm border-b">
-      
-      {/* 🔍 Search Bar */}
-      <div className="flex items-center bg-gray-100 px-3 py-2 rounded-lg w-1/2">
-        <Search size={18} className="text-gray-500 mr-2" />
-        <input
-          type="text"
-          placeholder="Search orders, customers, SKUs..."
-          className="bg-transparent outline-none w-full text-sm"
-        />
-      </div>
-
-      {/* 🔔 Actions */}
-      <div className="flex items-center gap-5">
-        
-        {/* Notification Icon */}
-        <Bell className="text-gray-600 cursor-pointer" size={20} />
-
-        {/* Role Badge */}
-        {role && (
-          <span className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold">
-            {role.toUpperCase()}
-          </span>
-        )}
-
-        {/* User Info */}
-        <div className="flex items-center gap-2">
-          <div className="text-right">
-            <p className="text-sm font-semibold">{name}</p>
-            <p className="text-xs text-gray-500">Store Manager</p>
-          </div>
-
-          <img
-            src="https://i.pravatar.cc/40"
-            alt="user"
-            className="w-10 h-10 rounded-full"
+    <div className="navbar">
+      <div className="navbar-content">
+        {/* Search Bar */}
+        <div className="search-container">
+          <Search size={18} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search employees, roles, or stores..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
           />
         </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
-        >
-          Logout
-        </button>
+        {/* Right side actions */}
+        <div className="navbar-actions">
+          {/* Notification Bell */}
+          <button className="nav-btn">
+            <Bell size={20} />
+            <span className="notification-dot"></span>
+          </button>
+
+          {/* Settings */}
+          <button className="nav-btn">
+            <Settings size={20} />
+          </button>
+
+          {/* User Profile */}
+          <div className="user-profile">
+            <div className="user-avatar">
+              <img
+                src="https://i.pravatar.cc/40"
+                alt="Alex Rivera"
+                className="avatar-img"
+              />
+            </div>
+            <div className="user-info">
+              <p className="user-name">Alex Rivera</p>
+              <p className="user-role">Store Manager</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
