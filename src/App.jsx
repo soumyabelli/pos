@@ -3,7 +3,6 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import ManagerDashboard from "./pages/ManagerDashboard";
 import POS from "./pages/POS";
-import InventoryDashboard from "./pages/InventoryDashboard";
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/manager" element={<ManagerDashboard />} />
         <Route path="/pos" element={<POS />} />
-        <Route path="/inventory" element={<InventoryDashboard />} />
       </Routes>
     </Router>
   );
