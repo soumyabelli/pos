@@ -22,6 +22,12 @@ export default function ManagerDashboard() {
           </div>
           <div className="flex gap-3">
             <button 
+              onClick={() => navigate('/inventory')}
+              className="px-5 py-2.5 bg-neutral-900 border border-neutral-800 rounded-xl hover:bg-neutral-800 transition-colors text-sm font-medium cursor-pointer"
+            >
+              Inventory
+            </button>
+            <button 
               onClick={() => navigate('/pos')}
               className="px-5 py-2.5 bg-neutral-900 border border-neutral-800 rounded-xl hover:bg-neutral-800 transition-colors text-sm font-medium cursor-pointer"
             >
