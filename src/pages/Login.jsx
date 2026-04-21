@@ -31,7 +31,7 @@ export default function Login() {
       else if (detectedRole === "inventory") navigate("/manager");
       else navigate("/pos");
 
-    } catch (err) {
+    } catch {
       setError("Login Failed");
     }
   };

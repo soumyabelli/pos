@@ -1,3 +1,4 @@
+/* global require, module */
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
