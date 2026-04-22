@@ -17,11 +17,11 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
 
-        <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/menu" element={<ProductManagement />} />
         <Route path="/manager" element={<ManagerDashboard />} />
         
         {/* Main Admin Sidebar Routes */}
-        <Route path="/admin" element={<Navigate to="/admin/products" replace />} />
+        <Route path="/admin" element={<ManagerDashboard />} />
         <Route path="/admin/inventory" element={<InventoryManagement />} />
         <Route path="/admin/orders" element={<OrderManagement />} />
         <Route path="/admin/reports" element={<ReportsManagement />} />
