@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Search, Bell, Settings, Download, Filter, MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
 const UserManagement = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
   const teamMembers = [
     {
       id: 1,
