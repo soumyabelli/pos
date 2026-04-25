@@ -10,12 +10,12 @@ export const IMAGE_POOL = [
 ];
 
 export const FALLBACK_PRODUCTS = [
-  { id: "p1", name: "Vortex Runner Pro", price: 129.99, category: "Footwear", stock: 12 },
-  { id: "p2", name: "Lunar Series Watch", price: 85.0, category: "Accessories", stock: 5 },
+  { id: "p1", name: "Vortex Runner Pro", price: 129.99, category: "Food", stock: 12 },
+  { id: "p2", name: "Lunar Series Watch", price: 85.0, category: "Beverages", stock: 5 },
   { id: "p3", name: "Studio Bass Headsets", price: 159.2, category: "Electronics", stock: 16 },
-  { id: "p4", name: "Classic Aviators", price: 45.0, category: "Accessories", stock: 21 },
-  { id: "p5", name: "Urban Strike X", price: 110.0, category: "Footwear", stock: 8 },
-  { id: "p6", name: "Luxe Tote Bag", price: 210.0, category: "Apparel", stock: 3 },
+  { id: "p4", name: "Classic Aviators", price: 45.0, category: "Beverages", stock: 21 },
+  { id: "p5", name: "Urban Strike X", price: 110.0, category: "Food", stock: 8 },
+  { id: "p6", name: "Luxe Tote Bag", price: 210.0, category: "Desserts", stock: 3 },
   { id: "p7", name: "Glass Brew Set", price: 34.5, category: "Home", stock: 15 },
   { id: "p8", name: "Retro 35mm Camera", price: 450.0, category: "Electronics", stock: 2 },
 ];

@@ -40,14 +40,14 @@ const CATEGORY_OPTIONS = ["All", "Coffee", "Drinks", "Food", "Dessert"];
 
 function getDisplayName() {
   const token = localStorage.getItem("token");
-  if (!token) return "Alex Rivera";
+  if (!token) return "Soumya";
   try {
     const payload = token.split(".")[1];
-    if (!payload) return "Alex Rivera";
+    if (!payload) return "Soumya";
     const decoded = JSON.parse(atob(payload));
-    return decoded?.name || "Alex Rivera";
+    return decoded?.name || "Soumya";
   } catch {
-    return "Alex Rivera";
+    return "Soumya";
   }
 }
 

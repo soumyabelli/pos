@@ -19,15 +19,15 @@ const storePerformance = [
 
 function getDisplayName() {
   const token = localStorage.getItem("token");
-  if (!token) return "Alex Rivera";
+  if (!token) return "Soumya";
 
   try {
     const payload = token.split(".")[1];
-    if (!payload) return "Alex Rivera";
+    if (!payload) return "Soumya";
     const decoded = JSON.parse(atob(payload));
-    return decoded?.name || "Alex Rivera";
+    return decoded?.name || "Soumya";
   } catch {
-    return "Alex Rivera";
+    return "Soumya";
   }
 }
 
@@ -133,15 +133,15 @@ export default function ReportsManagement() {
 
               <div className="rpt-breakdown-list">
                 <div>
-                  <span>Footwear</span>
+                  <span>Food</span>
                   <strong>38%</strong>
                 </div>
                 <div>
-                  <span>Apparel</span>
+                  <span>Desserts</span>
                   <strong>29%</strong>
                 </div>
                 <div>
-                  <span>Accessories</span>
+                  <span>Beverages</span>
                   <strong>21%</strong>
                 </div>
                 <div>

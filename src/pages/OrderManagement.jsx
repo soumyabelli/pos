@@ -21,15 +21,15 @@ const STATUS_TABS = ["All", "Pending", "Completed", "Cancelled"];
 
 function getDisplayName() {
   const token = localStorage.getItem("token");
-  if (!token) return "Alex Rivera";
+  if (!token) return "Soumya";
 
   try {
     const payload = token.split(".")[1];
-    if (!payload) return "Alex Rivera";
+    if (!payload) return "Soumya";
     const decoded = JSON.parse(atob(payload));
-    return decoded?.name || "Alex Rivera";
+    return decoded?.name || "Soumya";
   } catch {
-    return "Alex Rivera";
+    return "Soumya";
   }
 }
 
@@ -61,7 +61,7 @@ export default function OrderManagement() {
       <div className="admin-main ord-main">
         <header className="admin-topbar ord-topbar">
           <label className="admin-searchbar" htmlFor="orders-search">
-            <Search size={16} />
+            {(!searchValue || searchValue.length === 0) && <Search size={16} />}
             <input
               id="orders-search"
               type="text"
