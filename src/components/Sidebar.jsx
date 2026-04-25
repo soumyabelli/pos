@@ -18,7 +18,7 @@ export default function Sidebar() {
     { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
     { name: "POS", icon: ShoppingCart, path: "/pos" },
     { name: "Menu", icon: Utensils, path: "/admin/menu" },
-    { name: "Inventory", icon: Box, path: "/admin/inventory" },
+    { name: "Food Items", icon: Box, path: "/admin/inventory" },
     { name: "Orders", icon: ClipboardList, path: "/admin/orders" },
     { name: "Reports", icon: BarChart3, path: "/admin/reports" },
     { name: "Users", icon: Users, path: "/admin/users" },

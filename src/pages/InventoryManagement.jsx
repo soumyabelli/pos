@@ -10,16 +10,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-
-const INVENTORY_ROWS = [
-  { id: "CR-SN-001", product: "Curator One Sneakers", sku: "CR-SN-001", store: "Main Street Flagship", category: "Footwear", stock: 142, status: "optimal" },
-  { id: "CR-LS-042", product: "Artisan Linen Shirt", sku: "CR-LS-042", store: "Main Street Flagship", category: "Apparel", stock: 8, status: "critical" },
-  { id: "CR-WT-109", product: "Curator Timepiece", sku: "CR-WT-109", store: "Uptown Concept Store", category: "Accessories", stock: 24, status: "reorder" },
-  { id: "CR-SG-772", product: "Polarized Series X", sku: "CR-SG-772", store: "Main Street Flagship", category: "Accessories", stock: 67, status: "optimal" },
-  { id: "CR-TT-889", product: "Minimalist Tote", sku: "CR-TT-889", store: "Concept Store", category: "Accessories", stock: 12, status: "critical" },
-  { id: "CR-BT-335", product: "Canvas Belt (Khaki)", sku: "CR-BT-335", store: "Warehouse A", category: "Apparel", stock: 2, status: "critical" },
-  { id: "CR-CP-120", product: "Studio Cap", sku: "CR-CP-120", store: "Main Street Flagship", category: "Apparel", stock: 0, status: "critical" },
-];
+import { getInventory } from "../utils/mockInventory";
 
 const TABS = [
   { id: "all", label: "All Items" },
@@ -55,7 +46,7 @@ export default function InventoryManagement() {
   const rows = useMemo(() => {
     const normalizedQuery = searchValue.trim().toLowerCase();
 
-    return INVENTORY_ROWS.filter((row) => {
+    return getInventory().filter((row) => {
       const matchesSearch =
         normalizedQuery.length === 0 ||
         row.product.toLowerCase().includes(normalizedQuery) ||
@@ -64,7 +55,7 @@ export default function InventoryManagement() {
       if (!matchesSearch) return false;
       if (activeTab === "low") return row.stock > 0 && row.stock <= 15;
       if (activeTab === "out") return row.stock === 0;
-      if (activeTab === "category") return row.category === "Accessories";
+      if (activeTab === "category") return row.category === "Beverages";
       return true;
     }).sort((a, b) => {
       if (activeTab === "category") {
@@ -75,12 +66,12 @@ export default function InventoryManagement() {
   }, [activeTab, searchValue]);
 
   const criticalCount = useMemo(
-    () => INVENTORY_ROWS.filter((item) => item.stock <= 10).length,
+    () => getInventory().filter((item) => item.stock <= 10).length,
     []
   );
 
   const lowStockAlerts = useMemo(
-    () => INVENTORY_ROWS.filter((item) => item.stock <= 12).slice(0, 3),
+    () => getInventory().filter((item) => item.stock <= 12).slice(0, 3),
     []
   );
 
@@ -98,10 +89,12 @@ export default function InventoryManagement() {
         {/* Topbar */}
         <header className="h-20 px-8 flex items-center justify-between border-b border-slate-200 bg-white/60 backdrop-blur-md">
           <div className="relative w-96">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            {(!searchValue || searchValue.length === 0) && (
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            )}
             <input
               type="text"
-              placeholder="Search inventory SKU or name..."
+              placeholder="Search Food Items SKU or name..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm"
@@ -136,7 +129,7 @@ export default function InventoryManagement() {
             {/* Header section */}
             <section className="flex justify-between items-end">
               <div>
-                <h1 className="text-3xl font-black text-slate-900 tracking-tight drop-shadow-sm">Inventory Management</h1>
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight drop-shadow-sm">Food Items Management</h1>
                 <p className="text-slate-500 font-medium mt-1">Manage stock levels and distribution across flagship locations.</p>
               </div>
 
@@ -233,7 +226,7 @@ export default function InventoryManagement() {
                 </div>
 
                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-sm font-bold text-slate-500">
-                  <p>Showing {rows.length} of {INVENTORY_ROWS.length} products</p>
+                  <p>Showing {rows.length} of {getInventory().length} products</p>
                   <div className="flex gap-1">
                     <button className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors">{"<"}</button>
                     <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">1</button>

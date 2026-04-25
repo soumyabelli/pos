@@ -19,15 +19,15 @@ const storePerformance = [
 
 function getDisplayName() {
   const token = localStorage.getItem("token");
-  if (!token) return "Alex Rivera";
+  if (!token) return "Soumya";
 
   try {
     const payload = token.split(".")[1];
-    if (!payload) return "Alex Rivera";
+    if (!payload) return "Soumya";
     const decoded = JSON.parse(atob(payload));
-    return decoded?.name || "Alex Rivera";
+    return decoded?.name || "Soumya";
   } catch {
-    return "Alex Rivera";
+    return "Soumya";
   }
 }
 
@@ -82,7 +82,7 @@ export default function ReportsManagement() {
           <section className="rpt-kpis">
             <article className="rpt-kpi-card">
               <p>NET REVENUE</p>
-              <h2>$275,300</h2>
+              <h2>₹275,300</h2>
               <small>+9.4% vs last month</small>
             </article>
             <article className="rpt-kpi-card">
@@ -92,7 +92,7 @@ export default function ReportsManagement() {
             </article>
             <article className="rpt-kpi-card">
               <p>AVG ORDER VALUE</p>
-              <h2>$100.77</h2>
+              <h2>₹100.77</h2>
               <small>Stable performance</small>
             </article>
             <article className="rpt-kpi-card">
@@ -133,15 +133,15 @@ export default function ReportsManagement() {
 
               <div className="rpt-breakdown-list">
                 <div>
-                  <span>Footwear</span>
+                  <span>Food</span>
                   <strong>38%</strong>
                 </div>
                 <div>
-                  <span>Apparel</span>
+                  <span>Desserts</span>
                   <strong>29%</strong>
                 </div>
                 <div>
-                  <span>Accessories</span>
+                  <span>Beverages</span>
                   <strong>21%</strong>
                 </div>
                 <div>
@@ -174,7 +174,7 @@ export default function ReportsManagement() {
                   {storePerformance.map((store) => (
                     <tr key={store.name}>
                       <td>{store.name}</td>
-                      <td>${store.revenue.toLocaleString()}</td>
+                      <td>₹{store.revenue.toLocaleString()}</td>
                       <td>{store.orders.toLocaleString()}</td>
                       <td className="up">{store.growth}</td>
                     </tr>

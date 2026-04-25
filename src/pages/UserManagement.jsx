@@ -9,30 +9,30 @@ const UserManagement = () => {
   const teamMembers = [
     {
       id: 1,
-      name: 'Sarah Jenkins',
+      name: 'Akash',
       email: 'sarah.j@curator.com',
       role: 'ADMIN',
       store: 'Central Flagship',
       status: 'Active',
-      avatar: 'SJ'
+      avatar: 'AK'
     },
     {
       id: 2,
-      name: 'Marcus Bennett',
+      name: 'Soumya',
       email: 'm.bennett@curator.com',
       role: 'MANAGER',
       store: 'Westside Boutique',
       status: 'Active',
-      avatar: 'MB'
+      avatar: 'SM'
     },
     {
       id: 3,
-      name: 'David Chen',
+      name: 'Dhyan',
       email: 'd.chen@curator.com',
       role: 'CASHIER',
       store: 'Downtown Express',
       status: 'Away',
-      avatar: 'DC'
+      avatar: 'DH'
     },
     {
       id: 4,
@@ -245,7 +245,7 @@ const UserManagement = () => {
               <div className="p-6 rounded-2xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 hover:border-sky-300 transition-all group">
                 <h3 className="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-3">Manager Permissions</h3>
                 <ul className="space-y-3">
-                  {['Staff management', 'Inventory control', 'Sales reports', 'Order processing'].map((item, i) => (
+                  {['Staff management', 'Food Items control', 'Sales reports', 'Order processing'].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm font-bold text-slate-600">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
                       {item}

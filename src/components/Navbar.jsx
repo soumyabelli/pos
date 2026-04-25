@@ -37,13 +37,13 @@ export default function Navbar() {
           {/* User Profile */}
           <div className="flex items-center gap-3 pl-2 sm:pl-4 sm:border-l border-slate-200 ml-1 sm:ml-2 cursor-pointer group hover:bg-slate-50 p-2 rounded-xl transition-colors">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-black text-slate-900 leading-tight group-hover:text-sky-600 transition-colors">Alex Rivera</p>
+              <p className="text-sm font-black text-slate-900 leading-tight group-hover:text-sky-600 transition-colors">Soumya</p>
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">Store Manager</p>
             </div>
             <div className="w-10 h-10 rounded-xl border border-slate-200 group-hover:border-sky-500/50 transition-colors overflow-hidden shadow-sm group-hover:shadow-sky-500/10">
               <img
                 src="https://i.pravatar.cc/40"
-                alt="Alex Rivera"
+                alt="Soumya"
                 className="w-full h-full object-cover"
               />
             </div>

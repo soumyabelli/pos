@@ -33,7 +33,7 @@ export default function ManagerDashboard() {
               onClick={() => navigate('/admin/inventory')}
               className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200 transition-all text-sm font-bold shadow-sm cursor-pointer"
             >
-              Inventory
+              Food Items
             </button>
             <button 
               onClick={() => navigate('/pos')}

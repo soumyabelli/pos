@@ -23,7 +23,9 @@ export default function ProductGrid({
           </div>
           
           <div className="relative w-96 group">
-            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+            {(!search || search.length === 0) && (
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+            )}
             <input
               type="text"
               placeholder="Scan barcode or search SKU..."
@@ -39,12 +41,12 @@ export default function ProductGrid({
           </div>
         </div>
 
-        <div className="flex gap-2 pb-2 overflow-x-auto hide-scrollbar">
+        <div className="flex gap-4 pb-4 overflow-x-auto hide-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-6 py-2.5 rounded-xl text-sm font-black tracking-wide transition-all shadow-sm ${
+              className={`px-8 py-3 rounded-xl text-sm font-black tracking-wide transition-all shadow-sm ${
                 category === cat 
                   ? "bg-slate-900 text-white shadow-slate-900/20 border border-transparent scale-105" 
                   : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
@@ -58,7 +60,7 @@ export default function ProductGrid({
 
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto pb-10 pr-2 custom-scrollbar">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;
             return (
@@ -74,10 +76,10 @@ export default function ProductGrid({
                 <div className="h-32 flex items-center justify-center text-7xl rounded-t-2xl bg-gradient-to-b from-slate-50 to-transparent group-hover:from-orange-50 transition-colors">
                   {product.image}
                 </div>
-                <div className="p-4 flex flex-col gap-1 border-t border-slate-100">
+                <div className="p-5 flex flex-col gap-2 border-t border-slate-100">
                   <span className="text-[10px] font-black text-slate-400 font-mono tracking-widest">{product.sku}</span>
                   <h3 className="text-sm font-extrabold text-slate-800 leading-tight line-clamp-2 min-h-[40px]">{product.product}</h3>
-                  <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center justify-between mt-3">
                     <span className={`text-lg font-black ${outOfStock ? 'text-rose-500' : 'text-slate-900'}`}>₹{product.price.toFixed(2)}</span>
                     <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider ${
                       outOfStock ? 'bg-rose-100 text-rose-600' : 
