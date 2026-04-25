@@ -82,7 +82,7 @@ export default function ReportsManagement() {
           <section className="rpt-kpis">
             <article className="rpt-kpi-card">
               <p>NET REVENUE</p>
-              <h2>$275,300</h2>
+              <h2>₹275,300</h2>
               <small>+9.4% vs last month</small>
             </article>
             <article className="rpt-kpi-card">
@@ -92,7 +92,7 @@ export default function ReportsManagement() {
             </article>
             <article className="rpt-kpi-card">
               <p>AVG ORDER VALUE</p>
-              <h2>$100.77</h2>
+              <h2>₹100.77</h2>
               <small>Stable performance</small>
             </article>
             <article className="rpt-kpi-card">
@@ -174,7 +174,7 @@ export default function ReportsManagement() {
                   {storePerformance.map((store) => (
                     <tr key={store.name}>
                       <td>{store.name}</td>
-                      <td>${store.revenue.toLocaleString()}</td>
+                      <td>₹{store.revenue.toLocaleString()}</td>
                       <td>{store.orders.toLocaleString()}</td>
                       <td className="up">{store.growth}</td>
                     </tr>

@@ -115,7 +115,7 @@ export default function OrderManagement() {
           <section className="ord-kpis">
             <article className="ord-kpi-card">
               <p>DAILY REVENUE</p>
-              <h2>${dailyRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+              <h2>₹{dailyRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
               <small>+14%</small>
             </article>
             <article className="ord-kpi-card">
@@ -125,8 +125,8 @@ export default function OrderManagement() {
             </article>
             <article className="ord-kpi-card">
               <p>AVG ORDER VALUE</p>
-              <h2>${avgValue.toFixed(2)}</h2>
-              <small>+$12.00 from last month</small>
+              <h2>₹{avgValue.toFixed(2)}</h2>
+              <small>+₹12.00 from last month</small>
             </article>
             <article className="ord-kpi-card">
               <p>COMPLETION RATE</p>
@@ -183,7 +183,7 @@ export default function OrderManagement() {
                       </td>
                       <td>{order.items} Items</td>
                       <td>{order.date}</td>
-                      <td className="ord-total">${order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="ord-total">₹{order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                       <td>
                         <span className={`ord-status ${order.status.toLowerCase()}`}>{order.status}</span>
                       </td>
