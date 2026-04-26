@@ -10,22 +10,22 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="text-4xl font-semibold tracking-tight text-white">Reports</h1>
-        <p className="mt-1 text-base text-slate-300/85">Sales and revenue trend overview with summary metrics.</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-[#3E2723]">Reports</h1>
+        <p className="mt-1 text-base text-[#8B6F47]">Sales and revenue trend overview with summary metrics.</p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-xs uppercase tracking-wider text-slate-300/80">Total Revenue</p>
-          <p className="mt-2 text-3xl font-semibold text-white">Rs {totalRevenue.toFixed(2)}</p>
+          <p className="text-xs uppercase tracking-wider text-[#8B6F47]">Total Revenue</p>
+          <p className="mt-2 text-3xl font-semibold text-[#3E2723]">Rs {totalRevenue.toFixed(2)}</p>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-wider text-slate-300/80">Total Orders</p>
-          <p className="mt-2 text-3xl font-semibold text-white">{orders.length}</p>
+          <p className="text-xs uppercase tracking-wider text-[#8B6F47]">Total Orders</p>
+          <p className="mt-2 text-3xl font-semibold text-[#3E2723]">{orders.length}</p>
         </Card>
         <Card>
-          <p className="text-xs uppercase tracking-wider text-slate-300/80">Avg Order Value</p>
-          <p className="mt-2 text-3xl font-semibold text-white">Rs {avgOrder.toFixed(2)}</p>
+          <p className="text-xs uppercase tracking-wider text-[#8B6F47]">Avg Order Value</p>
+          <p className="mt-2 text-3xl font-semibold text-[#3E2723]">Rs {avgOrder.toFixed(2)}</p>
         </Card>
       </section>
 
@@ -34,9 +34,9 @@ export default function ReportsPage() {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={salesOverview}>
-                <CartesianGrid stroke="#ffffff1f" strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid stroke="#eadccf" strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fill: "#8B6F47", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#8B6F47", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Bar dataKey="online" fill="#60a5fa" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -48,9 +48,9 @@ export default function ReportsPage() {
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={salesOverview}>
-                <CartesianGrid stroke="#ffffff1f" strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#cbd5e1", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <CartesianGrid stroke="#eadccf" strokeDasharray="3 3" />
+                <XAxis dataKey="month" tick={{ fill: "#8B6F47", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#8B6F47", fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Line type="monotone" dataKey="store" stroke="#a78bfa" strokeWidth={3} dot={false} />
               </LineChart>

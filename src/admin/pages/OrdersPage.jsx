@@ -3,9 +3,9 @@ import DataTable from "../components/DataTable";
 import { useAdminData } from "../context/useAdminData";
 
 function badge(status) {
-  if (status === "Completed") return "bg-emerald-500/20 text-emerald-300";
-  if (status === "Pending") return "bg-amber-500/20 text-amber-300";
-  return "bg-rose-500/20 text-rose-300";
+  if (status === "Completed") return "bg-emerald-100 text-emerald-700";
+  if (status === "Pending") return "bg-amber-100 text-amber-700";
+  return "bg-rose-100 text-rose-700";
 }
 
 export default function OrdersPage() {
@@ -14,8 +14,8 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6">
       <section>
-        <h1 className="text-4xl font-semibold tracking-tight text-white">Orders</h1>
-        <p className="mt-1 text-base text-slate-300/85">Track omnichannel order processing and current status.</p>
+        <h1 className="text-4xl font-semibold tracking-tight text-[#3E2723]">Orders</h1>
+        <p className="mt-1 text-base text-[#8B6F47]">Track omnichannel order processing and current status.</p>
       </section>
 
       <Card title="Orders Table" subtitle="Mock order data with status badges">
