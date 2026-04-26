@@ -7,27 +7,23 @@
 
 /* ================= ROOT ================= */
 :root {
-  --bg-light: #F5F6FA;
-  --bg-dark: #0f172a;
+  /* Cafe Color Palette */
+  --primary: #6F4E37;        /* Coffee Brown */
+  --primary-dark: #3E2723;   /* Dark Brown */
+  --primary-light: #8B6F47;  /* Light Brown */
+  --accent: #D4853D;         /* Amber/Orange */
+  --cream: #F5E6D3;          /* Cream */
+  --text-dark: #2C1810;      /* Very Dark Brown */
+  --text-light: #FFFFFF;     /* White */
+  --success-color: #10b981;  /* Green */
+  --danger-color: #EF4444;   /* Red */
+  --border-color: #D9C4B3;   /* Soft Border */
+  --bg-light: #FFFBF7;       /* Off White */
 
-  --text-main: #111827;
-  --text-muted: #6b7280;
-
-  --accent-color: #4F46E5;
-  --accent-hover: #4338CA;
-
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-
-  --border-color: #e5e7eb;
-  
-  /* Glassmorphism variables */
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-bg-strong: rgba(255, 255, 255, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  --glass-backdrop: blur(10px);
-  --glass-backdrop-strong: blur(20px);
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(76, 54, 36, 0.1);
+  --shadow-md: 0 4px 16px rgba(76, 54, 36, 0.15);
+  --shadow-lg: 0 12px 32px rgba(76, 54, 36, 0.2);
 }
 
 /* ================= RESET ================= */
@@ -40,9 +36,9 @@
 /* ================= BODY ================= */
 body {
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #fecfef 75%, #fecfef 100%);
+  background: linear-gradient(135deg, #F5E6D3 0%, #FFFBF7 100%);
   background-attachment: fixed;
-  color: var(--text-main);
+  color: var(--text-dark);
   min-height: 100vh;
 }
 

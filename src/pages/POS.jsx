@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import axios from "axios";
 import "../index.css";
 import { getInventory, reduceStockForPurchase } from "../utils/mockInventory";
 
@@ -8,6 +9,7 @@ import CheckoutOverlay from "../components/pos/CheckoutOverlay";
 
 const CATEGORIES = ["All", "Coffee", "Drinks", "Food", "Dessert"];
 const TAX_RATE = 0.08;
+const API_BASE = "http://localhost:5000/api";
 
 export default function POS() {
   const [inventory, setInventory] = useState(getInventory);
@@ -18,11 +20,13 @@ export default function POS() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
+  const [customerName, setCustomerName] = useState("");
+  const [checkoutError, setCheckoutError] = useState("");
 
   useEffect(() => {
     const handleUpdate = () => setInventory(getInventory());
-    window.addEventListener("inventory_updated", handleUpdate);
-    return () => window.removeEventListener("inventory_updated", handleUpdate);
+    globalThis.addEventListener("inventory_updated", handleUpdate);
+    return () => globalThis.removeEventListener("inventory_updated", handleUpdate);
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -82,79 +86,103 @@ export default function POS() {
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax;
 
-  const handlePaymentSelect = (method) => {
-    const orderId = `ORD-2026-${(total * 100).toFixed(0)}`;
-    reduceStockForPurchase(cart);
+  const handlePaymentSelect = async (method) => {
+    setCheckoutError("");
 
-    setReceiptData({
-      orderId,
-      date: new Date().toLocaleString(),
-      items: [...cart],
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCheckoutError("Please login again.");
+      return;
+    }
+
+    const payload = {
+      customerName: customerName.trim() || "Walk-in Customer",
+      paymentMethod: method,
       subtotal,
       tax,
-      total,
-      method
-    });
-    
-    setIsCheckoutOpen(false);
-    setIsInvoiceOpen(true);
+      items: cart.map((item) => ({
+        sku: item.sku,
+        productName: item.product,
+        qty: item.qty,
+        price: item.price,
+        total: item.qty * item.price
+      }))
+    };
+
+    try {
+      const res = await axios.post(`${API_BASE}/orders`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const savedOrder = res.data.order;
+      reduceStockForPurchase(cart);
+
+      setReceiptData({
+        orderId: savedOrder?.orderId || `ORD-${Date.now()}`,
+        date: new Date().toLocaleString(),
+        items: [...cart],
+        customerName: payload.customerName,
+        subtotal,
+        tax,
+        total,
+        method
+      });
+      
+      setIsCheckoutOpen(false);
+      setIsInvoiceOpen(true);
+    } catch (error) {
+      setCheckoutError(error.response?.data?.error || "Failed to save order to server.");
+    }
   };
 
   const closeAndClear = () => {
     setIsInvoiceOpen(false);
+    setCustomerName("");
+    setCheckoutError("");
     clearCart();
   };
 
   return (
-    <div className="flex h-screen font-sans overflow-hidden text-slate-900 relative bg-slate-50">
-      
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-orange-300/30 blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[30%] w-[600px] h-[600px] rounded-full bg-rose-300/30 blur-[130px] pointer-events-none"></div>
+    <div className="relative min-h-screen overflow-hidden bg-[#f8efe4] text-slate-900">
+      <div className="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[#d4853d]/20 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-10 h-72 w-72 rounded-full bg-[#6f4e37]/20 blur-3xl" />
 
-      <ProductGrid 
-        search={search}
-        setSearch={setSearch}
-        handleKeyDown={handleKeyDown}
-        categories={CATEGORIES}
-        category={category}
-        setCategory={setCategory}
-        filteredProducts={filteredProducts}
-        addToCart={addToCart}
-      />
+      <div className="relative z-10 flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+        <ProductGrid
+          search={search}
+          setSearch={setSearch}
+          handleKeyDown={handleKeyDown}
+          categories={CATEGORIES}
+          category={category}
+          setCategory={setCategory}
+          filteredProducts={filteredProducts}
+          addToCart={addToCart}
+        />
 
-      <CartSidebar 
-        cart={cart}
-        removeFromCart={removeFromCart}
-        updateQty={updateQty}
-        clearCart={clearCart}
-        subtotal={subtotal}
-        tax={tax}
-        total={total}
-        setIsCheckoutOpen={setIsCheckoutOpen}
-      />
+        <CartSidebar
+          cart={cart}
+          removeFromCart={removeFromCart}
+          updateQty={updateQty}
+          clearCart={clearCart}
+          subtotal={subtotal}
+          tax={tax}
+          total={total}
+          setIsCheckoutOpen={setIsCheckoutOpen}
+        />
+      </div>
 
-      <CheckoutOverlay 
+      <CheckoutOverlay
         isCheckoutOpen={isCheckoutOpen}
         setIsCheckoutOpen={setIsCheckoutOpen}
         isInvoiceOpen={isInvoiceOpen}
         total={total}
+        customerName={customerName}
+        setCustomerName={setCustomerName}
+        checkoutError={checkoutError}
         handlePaymentSelect={handlePaymentSelect}
         receiptData={receiptData}
         closeAndClear={closeAndClear}
       />
-
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scale-up { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .animate-fade-in { animation: fade-in 0.2s ease-out; }
-        .animate-scale-up { animation: scale-up 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-      `}</style>
     </div>
   );
 }

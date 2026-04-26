@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, Coffee, Zap } from "lucide-react";
 
 export default function ProductGrid({ 
   search, 
@@ -10,91 +10,116 @@ export default function ProductGrid({
   filteredProducts, 
   addToCart 
 }) {
+  const getCategoryIcon = (cat) => {
+    switch(cat) {
+      case 'Coffee': return '☕';
+      case 'Drinks': return '🥤';
+      case 'Food': return '🍔';
+      case 'Dessert': return '🍰';
+      default: return '✨';
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-white/60 backdrop-blur-md p-6 overflow-hidden relative z-10 border-r border-slate-200/60 shadow-lg">
-      {/* Header & Search */}
-      <header className="mb-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-sm">Urban Crust Terminal</h1>
-            <p className="text-sm font-bold text-slate-500 mt-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+    <section className="flex min-w-0 flex-1 flex-col border-r border-[#d9c4b3]/50 bg-gradient-to-b from-[#fffaf5] to-[#f4e6d6] p-4 sm:p-6 lg:h-full lg:overflow-hidden">
+      <header className="mb-4 rounded-2xl border border-[#d9c4b3]/70 bg-white/70 p-4 shadow-sm backdrop-blur-sm sm:p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
+              ☕
+            </div>
+            <div>
+              <h1 className="text-2xl font-black leading-tight tracking-tight text-[#3e2723] sm:text-3xl">Urban Crust POS</h1>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#8b6f47]">Counter Terminal</p>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <p className="text-sm font-bold text-[#6f4e37]">
+              {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+            </p>
+            <p className="text-xs font-medium text-[#8b6f47]">
+              {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
             </p>
           </div>
-          
-          <div className="relative w-96 group">
-            {(!search || search.length === 0) && (
-              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
-            )}
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          <label className="relative block">
+            <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
             <input
               type="text"
-              placeholder="Scan barcode or search SKU..."
+              placeholder="Scan SKU or search products"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 text-slate-900 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400 shadow-sm"
+              className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
               autoFocus
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-              <kbd className="px-2 py-1 bg-slate-100 border border-slate-200 rounded text-[10px] font-extrabold text-slate-500 uppercase shadow-sm">Enter</kbd>
-            </div>
-          </div>
-        </div>
+          </label>
 
-        <div className="flex gap-4 pb-4 overflow-x-auto hide-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              className={`px-8 py-3 rounded-xl text-sm font-black tracking-wide transition-all shadow-sm ${
-                category === cat 
-                  ? "bg-slate-900 text-white shadow-slate-900/20 border border-transparent scale-105" 
-                  : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                  category === cat
+                    ? "border-[#d4853d] bg-[#d4853d] text-white"
+                    : "border-[#d9c4b3] bg-white text-[#6f4e37] hover:border-[#d4853d]"
+                }`}
+              >
+                <span className="mr-1">{getCategoryIcon(cat)}</span>
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
-      {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto pb-10 pr-2 custom-scrollbar">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;
             return (
-              <div
+              <button
                 key={product.sku}
                 onClick={() => !outOfStock && addToCart(product)}
-                className={`relative flex flex-col bg-white rounded-2xl border transition-all ${
-                  outOfStock 
-                    ? "border-rose-200 bg-rose-50/50 opacity-60 cursor-not-allowed grayscale-[0.5]" 
-                    : "border-slate-200 shadow-sm hover:border-slate-900 hover:shadow-xl hover:shadow-slate-200 hover:-translate-y-1 cursor-pointer"
+                disabled={outOfStock}
+                className={`group rounded-2xl border bg-white p-3 text-left shadow-sm transition ${
+                  outOfStock
+                    ? "cursor-not-allowed border-[#e8d8cb] opacity-55"
+                    : "cursor-pointer border-[#d9c4b3] hover:-translate-y-0.5 hover:border-[#d4853d] hover:shadow-md active:translate-y-0"
                 }`}
               >
-                <div className="h-32 flex items-center justify-center text-7xl rounded-t-2xl bg-gradient-to-b from-slate-50 to-transparent group-hover:from-orange-50 transition-colors">
+                <div className={`mb-3 grid h-20 place-content-center rounded-xl border text-4xl ${
+                  outOfStock ? "border-[#e6d8cb] bg-[#fbf4ec]" : "border-[#e0cbb9] bg-[#fff8f2]"
+                }`}>
                   {product.image}
                 </div>
-                <div className="p-5 flex flex-col gap-2 border-t border-slate-100">
-                  <span className="text-[10px] font-black text-slate-400 font-mono tracking-widest">{product.sku}</span>
-                  <h3 className="text-sm font-extrabold text-slate-800 leading-tight line-clamp-2 min-h-[40px]">{product.product}</h3>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className={`text-lg font-black ${outOfStock ? 'text-rose-500' : 'text-slate-900'}`}>₹{product.price.toFixed(2)}</span>
-                    <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider ${
-                      outOfStock ? 'bg-rose-100 text-rose-600' : 
-                      product.stock <= 5 ? 'bg-amber-100 text-amber-600' : 
-                      'bg-slate-100 text-slate-600 shadow-sm border border-slate-200'
+
+                <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8b6f47]">{product.sku}</p>
+                <h3 className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-tight text-[#2c1810]">{product.product}</h3>
+
+                <div className="mt-3 flex items-center justify-between border-t border-[#e9d7c8] pt-2">
+                  <span className={`text-lg font-black ${outOfStock ? "text-[#ef4444]" : "text-[#d4853d]"}`}>
+                      ₹{product.price.toFixed(0)}
+                  </span>
+                  <span className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
+                      outOfStock
+                        ? "bg-red-100 text-red-700"
+                        : product.stock <= 3
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
                     }`}>
-                      {outOfStock ? 'OOS' : `${product.stock} left`}
-                    </span>
-                  </div>
+                    {outOfStock ? "Out" : `${product.stock} left`}
+                  </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

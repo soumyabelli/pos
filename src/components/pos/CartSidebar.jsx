@@ -1,4 +1,4 @@
-import { ShoppingCart, Minus, Plus, X } from "lucide-react";
+import { ShoppingCart, Minus, Plus, X, Trash2 } from "lucide-react";
 
 export default function CartSidebar({
   cart,
@@ -10,50 +10,75 @@ export default function CartSidebar({
   clearCart,
   setIsCheckoutOpen
 }) {
+  const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+
   return (
-    <div className="w-[420px] bg-white backdrop-blur-2xl border-l border-slate-200 flex flex-col shadow-[-20px_0_40px_rgba(0,0,0,0.05)] z-50 relative">
-      <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-        <h2 className="text-xl font-black flex items-center gap-2 text-slate-800 drop-shadow-sm">
-          <ShoppingCart size={22} className="text-slate-900" />
-          Current Order
-        </h2>
-        <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-black shadow-md shadow-slate-900/20">
-          {cart.reduce((sum, item) => sum + item.qty, 0)} Items
+    <div className="w-[420px] bg-gradient-to-b from-[#F5E6D3] to-[#FFFBF7] border-l-2 border-[#D9C4B3] flex flex-col shadow-[-20px_0_40px_rgba(76,54,36,0.15)] z-50 relative">
+      {/* Header */}
+      <div className="p-6 border-b-2 border-[#D9C4B3] flex items-center justify-between bg-white/40">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4853D] to-[#6F4E37] flex items-center justify-center text-white text-sm font-black">
+            🛒
+          </div>
+          <h2 className="text-lg font-black text-[#3E2723]">BILL</h2>
+        </div>
+        <span className="bg-[#D4853D] text-white px-3 py-1.5 rounded-full text-xs font-black shadow-md">
+          {itemCount} items
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar bg-slate-50/30">
+      {/* Cart Items */}
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
         {cart.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4 opacity-60">
-            <ShoppingCart size={48} strokeWidth={1} />
-            <p className="font-bold text-sm text-slate-500">Scan an item to start</p>
+          <div className="flex-1 flex flex-col items-center justify-center text-[#8B6F47] gap-4 opacity-70">
+            <div className="text-4xl">🛒</div>
+            <p className="font-bold text-sm text-[#6F4E37]">No items ordered</p>
+            <p className="text-xs text-[#8B6F47]">Scan or tap to add items</p>
           </div>
         ) : (
           cart.map((item) => (
-            <div key={item.sku} className="flex gap-4 p-3 bg-white rounded-xl border border-slate-200 shadow-sm animate-fade-in group hover:border-slate-300 hover:shadow-md transition-all">
-              <div className="w-14 h-14 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-center text-3xl shadow-inner">
+            <div 
+              key={item.sku} 
+              className="flex gap-3 p-3.5 bg-white/60 backdrop-blur-sm rounded-lg border border-[#D9C4B3]/50 shadow-sm hover:border-[#D4853D]/50 hover:shadow-md transition-all group"
+            >
+              {/* Item Image */}
+              <div className="w-12 h-12 bg-white rounded-lg border border-[#D9C4B3] flex items-center justify-center text-2xl flex-shrink-0">
                 {item.image}
               </div>
-              <div className="flex-1 flex flex-col justify-between py-1">
+
+              {/* Item Details */}
+              <div className="flex-1 flex flex-col justify-between">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h4 className="text-sm font-black text-slate-800 leading-tight">{item.product}</h4>
-                    <p className="text-xs font-extrabold text-slate-500">₹{item.price.toFixed(2)}</p>
+                    <h4 className="text-sm font-bold text-[#2C1810] leading-tight">{item.product}</h4>
+                    <p className="text-xs font-semibold text-[#8B6F47]">₹{item.price.toFixed(0)}</p>
                   </div>
                   <button 
                     onClick={() => removeFromCart(item.sku)}
-                    className="text-slate-400 hover:text-rose-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-50 rounded-full shadow-sm"
+                    className="text-[#D9C4B3] hover:text-[#EF4444] p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 rounded-md"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg p-0.5">
-                    <button onClick={() => updateQty(item.sku, -1)} className="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm rounded-md transition-all"><Minus size={14} /></button>
-                    <span className="text-sm font-black w-5 text-center text-slate-800">{item.qty}</span>
-                    <button onClick={() => updateQty(item.sku, 1)} className="w-7 h-7 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm rounded-md transition-all"><Plus size={14} /></button>
+
+                {/* Quantity Controls */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-1 bg-white/60 border border-[#D9C4B3] rounded-lg p-1">
+                    <button 
+                      onClick={() => updateQty(item.sku, -1)}
+                      className="w-6 h-6 flex items-center justify-center text-[#6F4E37] hover:text-[#3E2723] hover:bg-[#F5E6D3] rounded-md transition-all"
+                    >
+                      <Minus size={12} />
+                    </button>
+                    <span className="text-xs font-black text-[#2C1810] w-4 text-center">{item.qty}</span>
+                    <button 
+                      onClick={() => updateQty(item.sku, 1)}
+                      className="w-6 h-6 flex items-center justify-center text-[#6F4E37] hover:text-[#3E2723] hover:bg-[#F5E6D3] rounded-md transition-all"
+                    >
+                      <Plus size={12} />
+                    </button>
                   </div>
-                  <span className="text-sm font-black text-slate-900">₹{(item.price * item.qty).toFixed(2)}</span>
+                  <span className="text-xs font-black text-[#D4853D]">₹{(item.price * item.qty).toFixed(0)}</span>
                 </div>
               </div>
             </div>
@@ -61,30 +86,41 @@ export default function CartSidebar({
         )}
       </div>
 
-      <div className="p-6 bg-white border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] flex flex-col gap-4 relative z-20">
-        <div className="flex flex-col gap-2 text-sm font-extrabold text-slate-500">
-          <div className="flex justify-between"><span>Subtotal</span><span className="text-slate-800">₹{subtotal.toFixed(2)}</span></div>
-          <div className="flex justify-between"><span>Tax (8%)</span><span className="text-slate-800">₹{tax.toFixed(2)}</span></div>
-          <div className="flex justify-between items-end mt-2 pt-4 border-t border-slate-200">
-            <span className="text-base text-slate-800 font-black tracking-wide">Total Pay</span>
-            <span className="text-4xl font-black text-slate-900 drop-shadow-sm">₹{total.toFixed(2)}</span>
+      {/* Summary & Checkout */}
+      <div className="p-5 bg-white/60 backdrop-blur-sm border-t-2 border-[#D9C4B3] flex flex-col gap-4">
+        {/* Summary */}
+        <div className="space-y-2 pb-4 border-b border-[#D9C4B3]/50">
+          <div className="flex justify-between text-xs font-semibold text-[#6F4E37]">
+            <span>Subtotal</span>
+            <span className="text-[#3E2723]">₹{subtotal.toFixed(0)}</span>
+          </div>
+          <div className="flex justify-between text-xs font-semibold text-[#6F4E37]">
+            <span>Tax (8%)</span>
+            <span className="text-[#3E2723]">₹{tax.toFixed(0)}</span>
           </div>
         </div>
 
-        <div className="flex gap-3 mt-3">
+        {/* Total */}
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-black text-[#6F4E37]">TOTAL DUE</span>
+          <span className="text-3xl font-black text-[#D4853D]">₹{total.toFixed(0)}</span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2 mt-2">
           <button 
             onClick={clearCart}
             disabled={cart.length === 0}
-            className="px-5 py-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 font-black hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="p-3 rounded-lg border-2 border-[#D9C4B3] bg-white/60 text-[#6F4E37] hover:text-[#EF4444] hover:border-[#EF4444] hover:bg-red-50/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            Clear
+            <Trash2 size={16} />
           </button>
           <button 
             onClick={() => setIsCheckoutOpen(true)}
             disabled={cart.length === 0}
-            className="flex-1 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-black text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-gradient-to-r from-[#D4853D] to-[#6F4E37] hover:from-[#E59449] hover:to-[#8B6F47] text-white rounded-lg font-black text-sm shadow-lg hover:shadow-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Charge ₹{(total).toFixed(2)}
+            PROCEED
           </button>
         </div>
       </div>
