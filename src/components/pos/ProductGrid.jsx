@@ -1,4 +1,5 @@
-import { Search, Coffee, Zap } from "lucide-react";
+import { Search, ArrowLeft, Coffee, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductGrid({ 
   search, 
@@ -10,6 +11,8 @@ export default function ProductGrid({
   filteredProducts, 
   addToCart 
 }) {
+  const navigate = useNavigate();
+
   const getCategoryIcon = (cat) => {
     switch(cat) {
       case 'Coffee': return '☕';
@@ -25,6 +28,13 @@ export default function ProductGrid({
       <header className="mb-4 rounded-2xl border border-[#d9c4b3]/70 bg-white/70 p-4 shadow-sm backdrop-blur-sm sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigate('/admin/dashboard')}
+              className="p-2.5 bg-white/50 border border-[#d9c4b3]/50 hover:bg-white text-[#8b6f47] hover:text-[#6f4e37] rounded-xl transition-colors shadow-sm"
+              title="Exit POS"
+            >
+              <ArrowLeft size={18} />
+            </button>
             <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
               ☕
             </div>
@@ -46,14 +56,16 @@ export default function ProductGrid({
 
         <div className="mt-4 grid gap-3">
           <label className="relative block">
-            <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
+            {(!search || search.length === 0) && (
+              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
+            )}
             <input
               type="text"
               placeholder="Scan SKU or search products"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
+              className={`h-11 w-full rounded-xl border border-[#d9c4b3] bg-white pr-4 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20 placeholder:text-[#8b6f47] shadow-sm ${search ? 'pl-4' : 'pl-10'}`}
               autoFocus
             />
           </label>
@@ -77,7 +89,8 @@ export default function ProductGrid({
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-2">
+      {/* Products Grid */}
+      <div className="min-h-0 flex-1 overflow-y-auto pb-10 pr-1 lg:pr-2 custom-scrollbar">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;

@@ -84,13 +84,15 @@ export default function ProductsPage() {
 
       <Card>
         <label className="relative block max-w-md">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
+          {(!query || query.length === 0) && (
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
+          )}
           <input
             type="search"
             placeholder="Search products..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pl-9 pr-3 text-sm text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15"
+            className={`h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pr-3 text-sm text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15 ${query ? 'pl-4' : 'pl-9'}`}
           />
         </label>
         <div className="mt-4">

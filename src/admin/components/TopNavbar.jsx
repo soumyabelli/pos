@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Bell, Menu, Moon, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -14,6 +15,7 @@ const pageNames = {
 };
 
 export default function TopNavbar({ onOpenSidebar }) {
+  const [searchValue, setSearchValue] = useState("");
   const location = useLocation();
   const activePage = pageNames[location.pathname] || "Admin";
 
@@ -31,14 +33,18 @@ export default function TopNavbar({ onOpenSidebar }) {
           </button>
 
           <label className="relative w-full max-w-2xl">
-            <Search
-              size={16}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]"
-            />
+            {(!searchValue || searchValue.length === 0) && (
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]"
+              />
+            )}
             <input
               type="search"
               placeholder="Search products, orders, users..."
-              className="h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pl-9 pr-4 text-[0.95rem] text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className={`h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pr-4 text-[0.95rem] text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15 ${searchValue ? 'pl-4' : 'pl-9'}`}
             />
           </label>
         </div>
