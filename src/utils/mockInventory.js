@@ -1,17 +1,21 @@
-const INVENTORY_STORAGE_KEY = "urban_crust_inventory_v2";
+const INVENTORY_STORAGE_KEY = "urban_crust_inventory_v3";
 
 // Initial seed data based on the Food/Cafe theme
 const INITIAL_INVENTORY = [
   { id: "CF-ESP-01", product: "Espresso", sku: "1001", store: "Main Cafe", category: "Coffee", stock: 50, status: "optimal", price: 3.5, image: "☕" },
   { id: "CF-LAT-02", product: "Latte", sku: "1002", store: "Main Cafe", category: "Coffee", stock: 40, status: "optimal", price: 4.5, image: "🍵" },
   { id: "CF-CAP-03", product: "Cappuccino", sku: "1003", store: "Main Cafe", category: "Coffee", stock: 35, status: "optimal", price: 4.5, image: "☕" },
+  { id: "CF-MOC-04", product: "Mocha", sku: "1011", store: "Main Cafe", category: "Coffee", stock: 25, status: "optimal", price: 5.0, image: "🍫" },
   { id: "FD-CRO-01", product: "Croissant", sku: "1004", store: "Main Cafe", category: "Food", stock: 20, status: "optimal", price: 2.5, image: "🥐" },
   { id: "FD-BMU-02", product: "Blueberry Muffin", sku: "1005", store: "Pastry Desk", category: "Food", stock: 15, status: "reorder", price: 3.0, image: "🧁" },
   { id: "DR-SPW-01", product: "Sparkling Water", sku: "1006", store: "Fridge A", category: "Drinks", stock: 60, status: "optimal", price: 2.0, image: "🥤" },
   { id: "DR-ICT-02", product: "Iced Tea", sku: "1007", store: "Fridge A", category: "Drinks", stock: 45, status: "optimal", price: 3.5, image: "🍹" },
+  { id: "DR-LMO-03", product: "Lemonade", sku: "1012", store: "Fridge A", category: "Drinks", stock: 30, status: "optimal", price: 3.0, image: "🍋" },
   { id: "FD-SAN-03", product: "Sandwich", sku: "1008", store: "Main Cafe", category: "Food", stock: 5, status: "critical", price: 6.5, image: "🥪" },
+  { id: "FD-BGL-04", product: "Bagel", sku: "1013", store: "Main Cafe", category: "Food", stock: 18, status: "optimal", price: 2.5, image: "🥯" },
   { id: "DS-CHC-01", product: "Chocolate Cake", sku: "1009", store: "Pastry Desk", category: "Dessert", stock: 12, status: "reorder", price: 5.0, image: "🍰" },
   { id: "DS-MAC-02", product: "Macaron", sku: "1010", store: "Main Cafe", category: "Dessert", stock: 0, status: "critical", price: 2.5, image: "🍪" },
+  { id: "DS-ICR-03", product: "Ice Cream", sku: "1014", store: "Main Cafe", category: "Dessert", stock: 20, status: "optimal", price: 4.0, image: "🍨" },
 ];
 
 function updateStatus(stock) {

@@ -68,6 +68,7 @@ export default function OrderManagement() {
               placeholder="Search orders, customers, or IDs..."
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
+              style={{ paddingLeft: searchValue ? '1rem' : undefined }}
             />
           </label>
 

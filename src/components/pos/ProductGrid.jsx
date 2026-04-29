@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { Search, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductGrid({ 
   search, 
@@ -10,21 +11,32 @@ export default function ProductGrid({
   filteredProducts, 
   addToCart 
 }) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex-1 flex flex-col h-full bg-white/60 backdrop-blur-md p-6 overflow-hidden relative z-10 border-r border-slate-200/60 shadow-lg">
       {/* Header & Search */}
       <header className="mb-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-sm">Urban Crust Terminal</h1>
-            <p className="text-sm font-bold text-slate-500 mt-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+          <div className="flex items-start gap-4">
+            <button 
+              onClick={() => navigate('/admin/dashboard')}
+              className="mt-1.5 p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors shadow-sm"
+              title="Exit POS"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div>
+              <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-sm">Urban Crust Terminal</h1>
+              <p className="text-sm font-bold text-slate-500 mt-1">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
           </div>
           
           <div className="relative w-96 group">
             {(!search || search.length === 0) && (
-              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors pointer-events-none" />
             )}
             <input
               type="text"
@@ -32,7 +44,7 @@ export default function ProductGrid({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 text-slate-900 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400 shadow-sm"
+              className={`w-full pr-4 py-3.5 bg-white border border-slate-200 text-slate-900 rounded-2xl text-sm font-bold outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400 shadow-sm ${search ? 'pl-4' : 'pl-12'}`}
               autoFocus
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
@@ -60,7 +72,7 @@ export default function ProductGrid({
 
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto pb-10 pr-2 custom-scrollbar">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;
             return (
