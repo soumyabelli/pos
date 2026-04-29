@@ -89,14 +89,9 @@ export default function ProductGrid({
         </div>
       </header>
 
-<<<<<<< HEAD
       {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto pb-10 pr-2 custom-scrollbar">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-=======
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-2">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-10 pr-1 lg:pr-2 custom-scrollbar">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
->>>>>>> origin/main
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;
             return (
