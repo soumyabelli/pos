@@ -7,11 +7,11 @@ export default function AdminLayout() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#060b1b] text-slate-100">
+    <div className="relative h-screen overflow-hidden bg-[#f7efe5] text-slate-900">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-blue-600/20 blur-3xl" />
-        <div className="absolute right-1/4 top-0 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl" />
-        <div className="absolute bottom-10 right-10 h-80 w-80 rounded-full bg-violet-600/20 blur-3xl" />
+        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#d4853d]/20 blur-3xl" />
+        <div className="absolute right-1/4 top-0 h-56 w-56 rounded-full bg-[#6f4e37]/15 blur-3xl" />
+        <div className="absolute bottom-10 right-10 h-80 w-80 rounded-full bg-amber-200/30 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex h-full min-w-0">

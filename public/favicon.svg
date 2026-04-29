@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Urban Crust POS">
+  <defs>
+    <linearGradient id="cup" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4853D"/>
+      <stop offset="100%" stop-color="#6F4E37"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#1B1C22"/>
+  <path d="M16 24h24v14a12 12 0 0 1-12 12 12 12 0 0 1-12-12V24z" fill="url(#cup)"/>
+  <path d="M40 28h6a6 6 0 0 1 0 12h-4" fill="none" stroke="#D9C4B3" stroke-width="3" stroke-linecap="round"/>
+  <path d="M24 20c0-2 2-3 2-5M30 20c0-2 2-3 2-5M36 20c0-2 2-3 2-5" fill="none" stroke="#F5E6D3" stroke-width="2" stroke-linecap="round"/>
+</svg>

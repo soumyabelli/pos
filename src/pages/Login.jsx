@@ -1,38 +1,48 @@
 import { useState } from "react";
-// import axios from "axios";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../index.css"; // Ensure styles are pulled in
+import "../index.css";
+
+const API_BASE = "http://localhost:5000/api";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      // Dummy authentication for UI progress
-      // Simulate brief network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Call backend login API
+      const res = await axios.post(`${API_BASE}/auth/login`, { 
+        identifier,
+        password 
+      });
+
+      // Store token
+      localStorage.setItem("token", res.data.token);
       
-      // Temporarily bypass real axios call
-      // const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      
-      // Auto-detect role based on email for testing (backend will do this later via JWT token)
-      let detectedRole = "cashier";
-      if (email.toLowerCase().includes("admin")) detectedRole = "admin";
-      else if (email.toLowerCase().includes("manager") || email.toLowerCase().includes("inventory")) detectedRole = "inventory";
+      // Store user info
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       // Role-based routing
-      if (detectedRole === "admin") navigate("/admin");
-      else if (detectedRole === "inventory") navigate("/manager");
-      else navigate("/pos");
-
-    } catch {
-      setError("Login Failed");
+      const { role } = res.data.user;
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "manager") {
+        navigate("/manager");
+      } else {
+        navigate("/pos");
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,11 +61,12 @@ export default function Login() {
           
           <input
             className="login-input"
-            placeholder="Email Address"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Username or Email"
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
+            disabled={loading}
           />
 
           <input
@@ -65,16 +76,42 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
 
           <button
             type="submit"
             className="btn-primary-large glow"
-            style={{ width: "100%", marginTop: "1rem" }}
+            style={{ width: "100%", marginTop: "1rem", opacity: loading ? 0.6 : 1 }}
+            disabled={loading}
           >
-            Access System
+            {loading ? "Signing in..." : "Access System"}
           </button>
         </form>
+
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <p className="text-center text-xs font-bold text-slate-600 mb-4">TEST CREDENTIALS</p>
+          
+          <div className="space-y-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-xs font-black text-blue-900">👨‍💼 ADMIN</p>
+              <p className="text-[10px] text-blue-700">username: admin</p>
+              <p className="text-[10px] text-blue-700">password: admin</p>
+            </div>
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-xs font-black text-green-900">📋 MANAGER</p>
+              <p className="text-[10px] text-green-700">username: manager</p>
+              <p className="text-[10px] text-green-700">password: manager</p>
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <p className="text-xs font-black text-orange-900">👷 USER (Store Employee)</p>
+              <p className="text-[10px] text-orange-700">username: user</p>
+              <p className="text-[10px] text-orange-700">password: user</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

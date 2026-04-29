@@ -6,7 +6,7 @@ import Modal from "../components/Modal";
 import { useAdminData } from "../context/useAdminData";
 
 const inputClass =
-  "h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] px-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-blue-400/70";
+  "h-11 w-full rounded-xl border border-[#e7d5c3] bg-white px-3 text-sm text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15";
 
 const emptyForm = {
   name: "",
@@ -69,13 +69,13 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <section className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white">Products</h1>
-          <p className="mt-1 text-base text-slate-300/85">Manage catalog, pricing, and stock status.</p>
+          <h1 className="text-4xl font-semibold tracking-tight text-[#3E2723]">Products</h1>
+          <p className="mt-1 text-base text-[#8B6F47]">Manage catalog, pricing, and stock status.</p>
         </div>
         <button
           type="button"
           onClick={openForCreate}
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-900/40 transition hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 transition hover:brightness-110"
         >
           <Plus size={16} />
           Add Product
@@ -85,14 +85,14 @@ export default function ProductsPage() {
       <Card>
         <label className="relative block max-w-md">
           {(!query || query.length === 0) && (
-            <Search size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
           )}
           <input
             type="search"
             placeholder="Search products..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className={`h-11 w-full rounded-xl border border-white/15 bg-white/[0.06] pr-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-blue-400/70 ${query ? 'pl-4' : 'pl-11'}`}
+            className={`h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pr-3 text-sm text-[#3E2723] outline-none transition placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15 ${query ? 'pl-4' : 'pl-9'}`}
           />
         </label>
         <div className="mt-4">
@@ -117,7 +117,7 @@ export default function ProductsPage() {
                 key: "status",
                 header: "Status",
                 render: (row) => (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${row.status === "Active" ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-500/20 text-slate-300"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${row.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-700"}`}>
                     {row.status}
                   </span>
                 ),
@@ -127,10 +127,10 @@ export default function ProductsPage() {
                 header: "Actions",
                 render: (row) => (
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => openForEdit(row)} className="rounded-lg border border-white/15 p-1.5 hover:bg-white/10">
+                    <button type="button" onClick={() => openForEdit(row)} className="rounded-lg border border-[#e7d5c3] p-1.5 text-[#6F4E37] hover:bg-[#f8eee3]">
                       <PencilLine size={14} />
                     </button>
-                    <button type="button" onClick={() => deleteProduct(row.id)} className="rounded-lg border border-rose-400/30 p-1.5 text-rose-300 hover:bg-rose-500/20">
+                    <button type="button" onClick={() => deleteProduct(row.id)} className="rounded-lg border border-rose-300 p-1.5 text-rose-600 hover:bg-rose-50">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -148,50 +148,50 @@ export default function ProductsPage() {
         description="Use dummy data to maintain the product catalog."
       >
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <div className="rounded-2xl border border-[#eadccf] bg-white p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Product Name</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Product Name</span>
                 <input className={inputClass} placeholder="Enter product name" value={form.name} onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))} required />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Category</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Category</span>
                 <select className={inputClass} value={form.category} onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))} required>
                   {categories.map((item) => (
-                    <option key={item.id} value={item.name} className="bg-slate-900">
+                    <option key={item.id} value={item.name}>
                       {item.name}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Price (Rs)</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Price (Rs)</span>
                 <input className={inputClass} placeholder="0.00" type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm((s) => ({ ...s, price: e.target.value }))} required />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Stock</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Stock</span>
                 <input className={inputClass} placeholder="0" type="number" min="0" value={form.stock} onChange={(e) => setForm((s) => ({ ...s, stock: e.target.value }))} required />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Threshold</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Threshold</span>
                 <input className={inputClass} placeholder="10" type="number" min="0" value={form.threshold} onChange={(e) => setForm((s) => ({ ...s, threshold: e.target.value }))} required />
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">SKU</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">SKU</span>
                 <input className={inputClass} placeholder="PRD-001" value={form.sku} onChange={(e) => setForm((s) => ({ ...s, sku: e.target.value }))} required />
               </label>
               <label className="space-y-1.5 sm:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">Status</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Status</span>
                 <select className={inputClass} value={form.status} onChange={(e) => setForm((s) => ({ ...s, status: e.target.value }))}>
-                  <option className="bg-slate-900">Active</option>
-                  <option className="bg-slate-900">Inactive</option>
+                  <option>Active</option>
+                  <option>Inactive</option>
                 </select>
               </label>
             </div>
           </div>
-          <div className="flex justify-end gap-2 border-t border-white/10 pt-4">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="rounded-xl border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-medium text-slate-100 hover:bg-white/[0.12]">Cancel</button>
-            <button type="submit" className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-900/30 hover:brightness-110">
+          <div className="flex justify-end gap-2 border-t border-[#efdfd0] pt-4">
+            <button type="button" onClick={() => setIsModalOpen(false)} className="rounded-xl border border-[#e7d5c3] bg-white px-4 py-2 text-sm font-medium text-[#6F4E37] hover:bg-[#f8eee3]">Cancel</button>
+            <button type="submit" className="rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 hover:brightness-110">
               {editingProduct ? "Update Product" : "Save Product"}
             </button>
           </div>
