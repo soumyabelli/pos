@@ -22,12 +22,13 @@ const emptyForm = {
 const MAX_IMAGE_SIZE_MB = 2;
 
 export default function ProductsPage() {
-  const { products, categories, addProduct, updateProduct, deleteProduct } = useAdminData();
+  const { products, categories, addProduct, updateProduct, deleteProduct, loading, error } = useAdminData();
   const [query, setQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [imageError, setImageError] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
   const filteredProducts = useMemo(() => {
     const lower = query.toLowerCase();
@@ -41,8 +42,9 @@ export default function ProductsPage() {
 
   const openForCreate = () => {
     setEditingProduct(null);
-    setForm({ ...emptyForm, category: categories[0]?.name || "" });
+    setForm({ ...emptyForm, category: categories[0]?.name || "General" });
     setImageError("");
+    setSubmitError("");
     setIsModalOpen(true);
   };
 
@@ -59,6 +61,7 @@ export default function ProductsPage() {
       imageUrl: product.imageUrl || "",
     });
     setImageError("");
+    setSubmitError("");
     setIsModalOpen(true);
   };
 
@@ -97,14 +100,20 @@ export default function ProductsPage() {
     setImageError("");
   };
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault();
-    if (editingProduct) {
-      updateProduct(editingProduct.id, form);
-    } else {
-      addProduct(form);
+    setSubmitError("");
+
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, form);
+      } else {
+        await addProduct(form);
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      setSubmitError(err.response?.data?.error || "Could not save product.");
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -125,6 +134,7 @@ export default function ProductsPage() {
       </section>
 
       <Card>
+        {error && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
         <label className="relative block max-w-md">
           <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
           <input
@@ -174,7 +184,7 @@ export default function ProductsPage() {
                     <button type="button" onClick={() => openForEdit(row)} className="rounded-lg border border-[#e7d5c3] p-1.5 text-[#6F4E37] hover:bg-[#f8eee3]">
                       <PencilLine size={14} />
                     </button>
-                    <button type="button" onClick={() => deleteProduct(row.id)} className="rounded-lg border border-rose-300 p-1.5 text-rose-600 hover:bg-rose-50">
+                    <button type="button" onClick={() => deleteProduct(row.id)} className="rounded-lg border border-rose-300 p-1.5 text-rose-600 hover:bg-rose-50" disabled={loading}>
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -189,9 +199,10 @@ export default function ProductsPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingProduct ? "Edit Product" : "Add Product"}
-        description="Use dummy data to maintain the product catalog."
+        description="Manage your live catalog data."
       >
         <form onSubmit={onSubmit} className="space-y-4">
+          {submitError && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{submitError}</p>}
           <div className="rounded-2xl border border-[#eadccf] bg-white p-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1.5">
@@ -201,6 +212,7 @@ export default function ProductsPage() {
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Category</span>
                 <select className={inputClass} value={form.category} onChange={(e) => setForm((s) => ({ ...s, category: e.target.value }))} required>
+                  {categories.length === 0 && <option value="General">General</option>}
                   {categories.map((item) => (
                     <option key={item.id} value={item.name}>
                       {item.name}
@@ -257,8 +269,8 @@ export default function ProductsPage() {
           </div>
           <div className="flex justify-end gap-2 border-t border-[#efdfd0] pt-4">
             <button type="button" onClick={() => setIsModalOpen(false)} className="rounded-xl border border-[#e7d5c3] bg-white px-4 py-2 text-sm font-medium text-[#6F4E37] hover:bg-[#f8eee3]">Cancel</button>
-            <button type="submit" className="rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 hover:brightness-110">
-              {editingProduct ? "Update Product" : "Save Product"}
+            <button type="submit" disabled={loading} className="rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? "Saving..." : editingProduct ? "Update Product" : "Save Product"}
             </button>
           </div>
         </form>

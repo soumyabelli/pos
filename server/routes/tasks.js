@@ -1,19 +1,22 @@
 import express from 'express';
 import Task from '../models/Task.js';
 import User from '../models/User.js';
-import { authMiddleware, adminOnly, managerOrAdmin } from '../middleware/auth.js';
+import { authMiddleware, managerOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ✅ Create Task (Admin/Manager only - assign to workers)
+// Create task (Admin/Manager)
 router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const { title, description, assignedTo, priority, dueDate, category, notes } = req.body;
 
-    // Verify assignedTo user exists and is a worker
     const assignedUser = await User.findById(assignedTo);
     if (!assignedUser) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (assignedUser.role !== 'worker') {
+      return res.status(400).json({ error: 'Tasks can only be assigned to workers' });
     }
 
     const task = new Task({
@@ -36,15 +39,10 @@ router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
   }
 });
 
-// ✅ Get All Tasks (Admin/Manager see all, Workers see their own)
+// Get tasks (Admin/Manager all, Worker own only)
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    let filter = {};
-
-    // Workers only see their assigned tasks
-    if (req.user.role === 'worker') {
-      filter.assignedTo = req.user.id;
-    }
+    const filter = req.user.role === 'worker' ? { assignedTo: req.user.id } : {};
 
     const tasks = await Task.find(filter)
       .populate('assignedTo', 'name email role')
@@ -57,7 +55,44 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Get Single Task
+// Get task statistics
+router.get('/stats/summary', authMiddleware, async (req, res) => {
+  try {
+    const filter = req.user.role === 'worker' ? { assignedTo: req.user.id } : {};
+
+    const stats = await Task.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const summary = {
+      pending: 0,
+      inProgress: 0,
+      completed: 0,
+      cancelled: 0,
+      total: 0
+    };
+
+    stats.forEach((stat) => {
+      if (stat._id === 'Pending') summary.pending = stat.count;
+      if (stat._id === 'In Progress') summary.inProgress = stat.count;
+      if (stat._id === 'Completed') summary.completed = stat.count;
+      if (stat._id === 'Cancelled') summary.cancelled = stat.count;
+      summary.total += stat.count;
+    });
+
+    res.json(summary);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get single task
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
@@ -68,7 +103,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    // Check permissions
     if (req.user.role === 'worker' && task.assignedTo._id.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -79,7 +113,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Update Task Status (Workers update their task status)
+// Update task status
 router.patch('/:id/status', authMiddleware, async (req, res) => {
   try {
     const { status } = req.body;
@@ -93,7 +127,6 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    // Workers can only update their own tasks
     if (req.user.role === 'worker' && task.assignedTo.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
@@ -108,7 +141,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Update Task (Admin/Manager only)
+// Update task (Admin/Manager)
 router.put('/:id', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const { title, description, priority, dueDate, category, notes } = req.body;
@@ -129,54 +162,14 @@ router.put('/:id', authMiddleware, managerOrAdmin, async (req, res) => {
   }
 });
 
-// ✅ Delete Task (Admin/Manager only)
-router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
+// Delete task (Admin/Manager)
+router.delete('/:id', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
     if (!task) {
       return res.status(404).json({ error: 'Task not found' });
     }
     res.json({ message: 'Task deleted' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ Get Task Statistics
-router.get('/stats/summary', authMiddleware, async (req, res) => {
-  try {
-    let filter = {};
-    if (req.user.role === 'worker') {
-      filter.assignedTo = req.user.id;
-    }
-
-    const stats = await Task.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
-    const summary = {
-      pending: 0,
-      inProgress: 0,
-      completed: 0,
-      cancelled: 0,
-      total: 0
-    };
-
-    stats.forEach(stat => {
-      if (stat._id === 'Pending') summary.pending = stat.count;
-      if (stat._id === 'In Progress') summary.inProgress = stat.count;
-      if (stat._id === 'Completed') summary.completed = stat.count;
-      if (stat._id === 'Cancelled') summary.cancelled = stat.count;
-      summary.total += stat.count;
-    });
-
-    res.json(summary);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

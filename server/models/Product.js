@@ -16,8 +16,8 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Coffee', 'Drinks', 'Food', 'Dessert'],
-      default: 'Coffee'
+      default: 'General',
+      trim: true
     },
     price: {
       type: Number,
@@ -30,9 +30,14 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
+    threshold: {
+      type: Number,
+      default: 10,
+      min: 0
+    },
     image: {
       type: String,
-      default: '☕'
+      default: 'Item'
     },
     description: {
       type: String,

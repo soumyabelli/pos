@@ -17,6 +17,7 @@ import ReportsPage from "./admin/pages/ReportsPage";
 import SettingsPage from "./admin/pages/SettingsPage";
 import LogoutPage from "./admin/pages/LogoutPage";
 import { AdminDataProvider } from "./admin/context/AdminDataProvider";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -26,18 +27,41 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Our Custom Light Theme Pages */}
-        <Route path="/admin/menu" element={<ProductManagement />} />
-        <Route path="/manager" element={<ManagerDashboard />} />
+        <Route
+          path="/admin/menu"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <ProductManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/manager"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "manager"]}>
+              <ManagerDashboard />
+            </ProtectedRoute>
+          }
+        />
         
-        <Route path="/pos" element={<POS />} />
+        <Route
+          path="/pos"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "manager", "worker"]}>
+              <POS />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Remote Origin Main Admin Routes */}
         <Route
           path="/admin"
           element={
-            <AdminDataProvider>
-              <AdminLayout />
-            </AdminDataProvider>
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDataProvider>
+                <AdminLayout />
+              </AdminDataProvider>
+            </ProtectedRoute>
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />

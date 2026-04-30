@@ -1,39 +1,85 @@
-import { useState, useMemo, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "../index.css";
-import { getInventory, reduceStockForPurchase } from "../utils/mockInventory";
 
 import ProductGrid from "../components/pos/ProductGrid";
 import CartSidebar from "../components/pos/CartSidebar";
 import CheckoutOverlay from "../components/pos/CheckoutOverlay";
 
-const CATEGORIES = ["All", "Coffee", "Drinks", "Food", "Dessert"];
-const TAX_RATE = 0.08;
 const API_BASE = "http://localhost:5000/api";
+const DEFAULT_TAX_RATE = 0.08;
+
+function toNumber(value, fallback = 0) {
+  const next = Number(value);
+  return Number.isFinite(next) ? next : fallback;
+}
 
 export default function POS() {
-  const [inventory, setInventory] = useState(getInventory);
+  const [inventory, setInventory] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [cart, setCart] = useState([]);
-  
+  const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
+  const [inventoryError, setInventoryError] = useState("");
+  const [loadingInventory, setLoadingInventory] = useState(true);
+
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [customerName, setCustomerName] = useState("");
   const [checkoutError, setCheckoutError] = useState("");
 
-  useEffect(() => {
-    const handleUpdate = () => setInventory(getInventory());
-    globalThis.addEventListener("inventory_updated", handleUpdate);
-    return () => globalThis.removeEventListener("inventory_updated", handleUpdate);
+  const fetchInventory = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/products`);
+      setInventory(Array.isArray(res.data) ? res.data : []);
+      setInventoryError("");
+    } catch (error) {
+      setInventoryError(error.response?.data?.error || "Failed to load products.");
+    } finally {
+      setLoadingInventory(false);
+    }
   }, []);
+
+  const fetchSettings = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await axios.get(`${API_BASE}/settings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const nextTaxRate = toNumber(res.data?.taxRate, 8.5) / 100;
+      setTaxRate(nextTaxRate > 0 ? nextTaxRate : DEFAULT_TAX_RATE);
+    } catch {
+      setTaxRate(DEFAULT_TAX_RATE);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchInventory();
+    fetchSettings();
+
+    const interval = setInterval(fetchInventory, 15000);
+    return () => clearInterval(interval);
+  }, [fetchInventory, fetchSettings]);
+
+  const categories = useMemo(() => {
+    const categorySet = new Set(inventory.map((item) => item.category).filter(Boolean));
+    return ["All", ...categorySet];
+  }, [inventory]);
+
+  useEffect(() => {
+    if (!categories.includes(category)) {
+      setCategory("All");
+    }
+  }, [categories, category]);
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
-    return (inventory || []).filter((product) => {
-      const matchesSearch = 
-        (product.product || "").toLowerCase().includes(normalizedSearch) || 
+    return inventory.filter((product) => {
+      const matchesSearch =
+        (product.product || "").toLowerCase().includes(normalizedSearch) ||
         (product.sku || "").toLowerCase().includes(normalizedSearch);
       const matchesCategory = category === "All" || product.category === category;
       return matchesSearch && matchesCategory;
@@ -48,7 +94,7 @@ export default function POS() {
       if (existing) {
         if (existing.qty >= product.stock) return prev;
         return prev.map((item) =>
-          item.sku === product.sku ? { ...item, qty: item.qty + 1 } : item
+          item.sku === product.sku ? { ...item, qty: item.qty + 1 } : item,
         );
       }
       return [...prev, { ...product, qty: 1 }];
@@ -56,34 +102,37 @@ export default function POS() {
   };
 
   const updateQty = (sku, delta) => {
-    const product = inventory.find(p => p.sku === sku);
-    setCart((prev) => {
-      return prev.map((item) => {
-        if (item.sku === sku) {
-          const newQty = item.qty + delta;
-          if (newQty > product.stock) return item;
-          return newQty > 0 ? { ...item, qty: newQty } : null;
-        }
-        return item;
-      }).filter(Boolean);
-    });
+    const product = inventory.find((p) => p.sku === sku);
+    if (!product) return;
+
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.sku !== sku) return item;
+          const nextQty = item.qty + delta;
+          if (nextQty > product.stock) return item;
+          return nextQty > 0 ? { ...item, qty: nextQty } : null;
+        })
+        .filter(Boolean),
+    );
   };
 
   const removeFromCart = (sku) => setCart((prev) => prev.filter((item) => item.sku !== sku));
   const clearCart = () => setCart([]);
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && search.trim() !== '') {
-      const scannedProduct = inventory.find(p => (p.sku || "").toLowerCase() === search.trim().toLowerCase());
-      if (scannedProduct && scannedProduct.stock > 0) {
-        addToCart(scannedProduct);
-        setSearch("");
-      }
+  const handleKeyDown = (event) => {
+    if (event.key !== "Enter" || search.trim() === "") return;
+    const scannedProduct = inventory.find(
+      (item) => (item.sku || "").toLowerCase() === search.trim().toLowerCase(),
+    );
+    if (scannedProduct && scannedProduct.stock > 0) {
+      addToCart(scannedProduct);
+      setSearch("");
     }
   };
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const tax = subtotal * TAX_RATE;
+  const subtotal = cart.reduce((acc, item) => acc + toNumber(item.price) * item.qty, 0);
+  const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
   const handlePaymentSelect = async (method) => {
@@ -101,21 +150,22 @@ export default function POS() {
       subtotal,
       tax,
       items: cart.map((item) => ({
+        product: item._id,
         sku: item.sku,
         productName: item.product,
         qty: item.qty,
-        price: item.price,
-        total: item.qty * item.price
-      }))
+        price: toNumber(item.price),
+        total: item.qty * toNumber(item.price),
+      })),
     };
 
     try {
       const res = await axios.post(`${API_BASE}/orders`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const savedOrder = res.data.order;
-      reduceStockForPurchase(cart);
+      await fetchInventory();
 
       setReceiptData({
         orderId: savedOrder?.orderId || `ORD-${Date.now()}`,
@@ -125,9 +175,9 @@ export default function POS() {
         subtotal,
         tax,
         total,
-        method
+        method,
       });
-      
+
       setIsCheckoutOpen(false);
       setIsInvoiceOpen(true);
     } catch (error) {
@@ -152,11 +202,13 @@ export default function POS() {
           search={search}
           setSearch={setSearch}
           handleKeyDown={handleKeyDown}
-          categories={CATEGORIES}
+          categories={categories}
           category={category}
           setCategory={setCategory}
           filteredProducts={filteredProducts}
           addToCart={addToCart}
+          loadingInventory={loadingInventory}
+          inventoryError={inventoryError}
         />
 
         <CartSidebar

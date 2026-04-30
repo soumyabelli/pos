@@ -6,15 +6,21 @@ import Modal from "../components/Modal";
 import { useAdminData } from "../context/useAdminData";
 
 export default function CategoriesPage() {
-  const { categories, addCategory, deleteCategory } = useAdminData();
+  const { categories, addCategory, deleteCategory, loading, error } = useAdminData();
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "" });
+  const [submitError, setSubmitError] = useState("");
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
-    addCategory(form);
-    setForm({ name: "", description: "" });
-    setIsOpen(false);
+    setSubmitError("");
+    try {
+      await addCategory(form);
+      setForm({ name: "", description: "" });
+      setIsOpen(false);
+    } catch (err) {
+      setSubmitError(err.response?.data?.error || "Could not create category.");
+    }
   };
 
   return (
@@ -35,6 +41,7 @@ export default function CategoriesPage() {
       </section>
 
       <Card title="Category Table" subtitle="Current product groups">
+        {error && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
         <DataTable
           rowKey="id"
           data={categories}
@@ -48,6 +55,7 @@ export default function CategoriesPage() {
                 <button
                   type="button"
                   onClick={() => deleteCategory(row.id)}
+                  disabled={loading}
                   className="rounded-lg border border-rose-300 p-1.5 text-rose-600 hover:bg-rose-50"
                 >
                   <Trash2 size={14} />
@@ -60,6 +68,7 @@ export default function CategoriesPage() {
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Add Category">
         <form onSubmit={submit} className="space-y-4">
+          {submitError && <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{submitError}</p>}
           <div className="rounded-2xl border border-[#eadccf] bg-white p-4">
             <div className="grid gap-4">
               <label className="space-y-1.5">
@@ -89,8 +98,8 @@ export default function CategoriesPage() {
             <button type="button" onClick={() => setIsOpen(false)} className="rounded-xl border border-[#e7d5c3] bg-white px-4 py-2 text-sm font-medium text-[#6F4E37] hover:bg-[#f8eee3]">
               Cancel
             </button>
-            <button type="submit" className="rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 hover:brightness-110">
-              Save Category
+            <button type="submit" disabled={loading} className="rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? "Saving..." : "Save Category"}
             </button>
           </div>
         </form>
