@@ -15,6 +15,7 @@ const emptyForm = {
   stock: "",
   threshold: "10",
   sku: "",
+  barcode: "",
   status: "Active",
   imageUrl: "",
 };
@@ -36,7 +37,8 @@ export default function ProductsPage() {
       (item) =>
         item.name.toLowerCase().includes(lower) ||
         item.category.toLowerCase().includes(lower) ||
-        item.sku.toLowerCase().includes(lower),
+        item.sku.toLowerCase().includes(lower) ||
+        (item.barcode || "").toLowerCase().includes(lower),
     );
   }, [products, query]);
 
@@ -57,6 +59,7 @@ export default function ProductsPage() {
       stock: String(product.stock),
       threshold: String(product.threshold),
       sku: product.sku,
+      barcode: product.barcode || "",
       status: product.status,
       imageUrl: product.imageUrl || "",
     });
@@ -165,6 +168,8 @@ export default function ProductsPage() {
               },
               { key: "name", header: "Name" },
               { key: "category", header: "Category" },
+              { key: "sku", header: "SKU" },
+              { key: "barcode", header: "Barcode", render: (row) => row.barcode || "-" },
               { key: "price", header: "Price", render: (row) => `Rs ${Number(row.price).toFixed(2)}` },
               { key: "stock", header: "Stock" },
               {
@@ -235,6 +240,10 @@ export default function ProductsPage() {
               <label className="space-y-1.5">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">SKU</span>
                 <input className={inputClass} placeholder="PRD-001" value={form.sku} onChange={(e) => setForm((s) => ({ ...s, sku: e.target.value }))} required />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Barcode</span>
+                <input className={inputClass} placeholder="8901234567890" value={form.barcode} onChange={(e) => setForm((s) => ({ ...s, barcode: e.target.value }))} />
               </label>
               <label className="space-y-1.5 sm:col-span-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">Status</span>

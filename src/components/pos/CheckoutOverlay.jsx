@@ -5,8 +5,11 @@ export default function CheckoutOverlay({
   setIsCheckoutOpen,
   isInvoiceOpen,
   total,
+  taxRatePercent,
   customerName,
   setCustomerName,
+  customerPhone,
+  setCustomerPhone,
   checkoutError,
   handlePaymentSelect,
   receiptData,
@@ -52,6 +55,19 @@ export default function CheckoutOverlay({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Walk-in Customer"
+                  className="h-11 w-full rounded-lg border border-[#D9C4B3] bg-white px-3 text-sm font-semibold text-[#3E2723] outline-none focus:border-[#D4853D] focus:ring-2 focus:ring-[#D4853D]/30"
+                />
+              </div>
+              <div className="mb-6 text-left">
+                <label htmlFor="customer-phone" className="mb-1 block text-[11px] font-extrabold uppercase tracking-wider text-[#8B6F47]">
+                  Customer Phone
+                </label>
+                <input
+                  id="customer-phone"
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="e.g. 9876543210"
                   className="h-11 w-full rounded-lg border border-[#D9C4B3] bg-white px-3 text-sm font-semibold text-[#3E2723] outline-none focus:border-[#D4853D] focus:ring-2 focus:ring-[#D4853D]/30"
                 />
               </div>
@@ -108,6 +124,9 @@ export default function CheckoutOverlay({
               <h2 className="text-2xl font-black text-[#3E2723]">Payment Done!</h2>
               <p className="text-[#8B6F47] mt-1 font-bold text-sm">{receiptData.orderId}</p>
               <p className="mt-1 text-xs font-semibold text-[#6F4E37]">Customer: {receiptData.customerName || 'Walk-in Customer'}</p>
+              {receiptData.customerPhone && (
+                <p className="text-xs font-semibold text-[#6F4E37]">Phone: +{receiptData.customerPhone}</p>
+              )}
             </div>
             
             {/* Items List */}
@@ -133,7 +152,7 @@ export default function CheckoutOverlay({
                   <span className="text-[#3E2723]">₹{receiptData.subtotal.toFixed(0)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax (8%)</span>
+                  <span>Tax ({taxRatePercent}%)</span>
                   <span className="text-[#3E2723]">₹{receiptData.tax.toFixed(0)}</span>
                 </div>
                 <div className="flex justify-between items-end pt-3 border-t border-[#D9C4B3]/60">
@@ -145,6 +164,17 @@ export default function CheckoutOverlay({
               <div className="bg-[#D4853D]/15 border-2 border-[#D4853D]/40 rounded-lg p-2.5 text-center text-xs font-black text-[#D4853D] mb-5 uppercase tracking-wide">
                 💳 Paid via {receiptData.method}
               </div>
+
+              {receiptData.whatsappLink && (
+                <a
+                  href={receiptData.whatsappLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mb-3 flex w-full items-center justify-center rounded-lg border-2 border-[#25D366]/40 bg-[#25D366]/10 py-2.5 text-xs font-black uppercase tracking-wide text-[#128C7E] transition-colors hover:bg-[#25D366]/20"
+                >
+                  Send WhatsApp Thank You
+                </a>
+              )}
 
               <button 
                 className="w-full py-3.5 bg-gradient-to-r from-[#D4853D] to-[#6F4E37] hover:from-[#E59449] hover:to-[#8B6F47] text-white rounded-lg font-black shadow-lg transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5"

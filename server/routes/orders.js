@@ -5,15 +5,29 @@ import { authMiddleware, managerOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
+function normalizePhone(phone) {
+  return String(phone || '').replace(/\D/g, '');
+}
+
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName } = req.body;
+    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName, customerPhone } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Order must include at least one item' });
     }
 
     const totalAmount = Number(subtotal) + Number(tax);
+    const normalizedPhone = normalizePhone(customerPhone);
+
+    if (!customerName || !String(customerName).trim()) {
+      return res.status(400).json({ error: 'Customer name is required' });
+    }
+
+    if (!normalizedPhone || normalizedPhone.length < 10 || normalizedPhone.length > 15) {
+      return res.status(400).json({ error: 'Valid customer phone is required' });
+    }
+
     const orderId = `ORD-${Date.now()}`;
     const resolvedItems = [];
 
@@ -76,7 +90,8 @@ router.post('/', authMiddleware, async (req, res) => {
       tax: Number(tax),
       totalAmount,
       paymentMethod,
-      customerName: customerName || 'Walk-in Customer',
+      customerName: String(customerName).trim(),
+      customerPhone: normalizedPhone,
       cashier: req.user.id,
       store: 'Main Store'
     });

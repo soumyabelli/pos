@@ -54,6 +54,7 @@ router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const {
       sku,
+      barcode,
       product,
       name,
       category,
@@ -69,6 +70,7 @@ router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
 
     const newProduct = new Product({
       sku,
+      barcode,
       product: product || name,
       category,
       price,
@@ -90,6 +92,7 @@ router.put('/:id', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const {
       sku,
+      barcode,
       product: productName,
       name,
       category,
@@ -105,6 +108,7 @@ router.put('/:id', authMiddleware, managerOrAdmin, async (req, res) => {
 
     const updates = {
       sku,
+      barcode,
       product: productName || name,
       category,
       price,

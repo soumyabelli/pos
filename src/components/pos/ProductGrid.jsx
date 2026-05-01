@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { ScanLine, Search } from "lucide-react";
 
 function isImageUrl(value) {
   if (typeof value !== "string") return false;
@@ -9,6 +9,8 @@ export default function ProductGrid({
   search,
   setSearch,
   handleKeyDown,
+  onOpenScanner,
+  scanNotice,
   categories,
   category,
   setCategory,
@@ -59,18 +61,40 @@ export default function ProductGrid({
         </div>
 
         <div className="mt-4 grid gap-3">
-          <label className="relative block">
-            <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
-            <input
-              type="text"
-              placeholder="Scan SKU or search products"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
-              autoFocus
-            />
-          </label>
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <label className="relative block">
+              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
+              <input
+                type="text"
+                placeholder="Scan SKU / barcode or search products"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
+                autoFocus
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onOpenScanner}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d9c4b3] bg-white px-3 text-xs font-black uppercase tracking-wide text-[#6f4e37] transition hover:border-[#d4853d] hover:bg-[#fff7ef]"
+            >
+              <ScanLine size={16} />
+              Camera Scan
+            </button>
+          </div>
+
+          {scanNotice?.message && (
+            <p
+              className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
+                scanNotice.type === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}
+            >
+              {scanNotice.message}
+            </p>
+          )}
 
           <div className="flex gap-2 overflow-x-auto pb-1">
             {categories.map((cat) => (

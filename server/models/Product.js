@@ -8,6 +8,11 @@ const productSchema = new mongoose.Schema(
       unique: true,
       trim: true
     },
+    barcode: {
+      type: String,
+      default: '',
+      trim: true
+    },
     product: {
       type: String,
       required: [true, 'Product name is required'],

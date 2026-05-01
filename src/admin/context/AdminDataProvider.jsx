@@ -29,6 +29,7 @@ function mapProduct(product) {
     stock: toNumber(product.stock),
     threshold: toNumber(product.threshold, 10),
     sku: product.sku,
+    barcode: product.barcode || "",
     description: product.description || "",
     status: product.isActive ? "Active" : "Inactive",
     imageUrl: typeof product.image === "string" && (product.image.startsWith("data:image") || product.image.startsWith("http"))
@@ -41,6 +42,7 @@ function mapOrder(order) {
   return {
     id: order.orderId || order._id,
     customer: order.customerName || "Walk-in Customer",
+    customerPhone: order.customerPhone || "",
     amount: toNumber(order.totalAmount),
     status: order.status || "Completed",
     date: formatOrderDate(order.createdAt),
@@ -155,6 +157,7 @@ export function AdminDataProvider({ children }) {
         stock: toNumber(payload.stock),
         threshold: toNumber(payload.threshold, 10),
         sku: payload.sku,
+        barcode: payload.barcode || "",
         status: payload.status,
         imageUrl: payload.imageUrl || "",
         description: payload.description || "",
@@ -174,6 +177,7 @@ export function AdminDataProvider({ children }) {
         stock: toNumber(updates.stock),
         threshold: toNumber(updates.threshold, 10),
         sku: updates.sku,
+        barcode: updates.barcode || "",
         status: updates.status,
         imageUrl: updates.imageUrl || "",
         description: updates.description || "",
