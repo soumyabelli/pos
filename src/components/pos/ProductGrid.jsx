@@ -1,4 +1,4 @@
-import { Search, ArrowLeft, Coffee, Zap } from "lucide-react";
+import { Search, LogOut, Coffee, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProductGrid({ 
@@ -29,11 +29,15 @@ export default function ProductGrid({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => navigate('/admin/dashboard')}
-              className="p-2.5 bg-white/50 border border-[#d9c4b3]/50 hover:bg-white text-[#8b6f47] hover:text-[#6f4e37] rounded-xl transition-colors shadow-sm"
-              title="Exit POS"
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                navigate('/login');
+              }}
+              className="p-2.5 bg-white/50 border border-[#d9c4b3]/50 hover:bg-rose-50 text-[#8b6f47] hover:text-rose-600 rounded-xl transition-colors shadow-sm"
+              title="Log Out"
             >
-              <ArrowLeft size={18} />
+              <LogOut size={18} />
             </button>
             <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
               ☕
