@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   Utensils,
+  LogOut,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -23,6 +24,7 @@ export default function Sidebar() {
     { name: "Reports", icon: BarChart3, path: "/admin/reports" },
     { name: "Users", icon: Users, path: "/admin/users" },
     { name: "Settings", icon: Settings, path: "/admin/settings" },
+    { name: "Logout", icon: LogOut, action: "logout" },
   ];
 
   return (
@@ -54,7 +56,15 @@ export default function Sidebar() {
             return (
               <li key={item.name}>
                 <button
-                  onClick={() => navigate(item.path)}
+                  onClick={() => {
+                    if (item.action === "logout") {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user");
+                      navigate("/login");
+                    } else {
+                      navigate(item.path);
+                    }
+                  }}
                   className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${
                     isActive
                       ? "bg-sky-50 text-sky-700 shadow-sm border border-sky-100"
