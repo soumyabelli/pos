@@ -5,20 +5,32 @@ import { authMiddleware, managerOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ✅ Create Order
+function normalizePhone(phone) {
+  return String(phone || '').replace(/\D/g, '');
+}
+
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName } = req.body;
+    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName, customerPhone } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Order must include at least one item' });
     }
 
-    const totalAmount = subtotal + tax;
-    const orderId = `ORD-${Date.now()}`;
-    const normalizedItems = [];
+    const totalAmount = Number(subtotal) + Number(tax);
+    const normalizedPhone = normalizePhone(customerPhone);
 
-    // Normalize items and update stock for each item where possible
+    if (!customerName || !String(customerName).trim()) {
+      return res.status(400).json({ error: 'Customer name is required' });
+    }
+
+    if (!normalizedPhone || normalizedPhone.length < 10 || normalizedPhone.length > 15) {
+      return res.status(400).json({ error: 'Valid customer phone is required' });
+    }
+
+    const orderId = `ORD-${Date.now()}`;
+    const resolvedItems = [];
+
     for (const item of items) {
       const qty = Number(item.qty || 0);
       const price = Number(item.price || 0);
@@ -31,34 +43,55 @@ router.post('/', authMiddleware, async (req, res) => {
       if (item.product) {
         dbProduct = await Product.findById(item.product);
       }
-
       if (!dbProduct && item.sku) {
         dbProduct = await Product.findOne({ sku: String(item.sku) });
       }
 
-      if (dbProduct) {
-        dbProduct.stock = Math.max(0, dbProduct.stock - qty);
-        await dbProduct.save();
+      if (!dbProduct) {
+        return res.status(400).json({ error: `Product not found for SKU: ${item.sku || 'N/A'}` });
       }
 
-      normalizedItems.push({
-        product: dbProduct?._id,
-        sku: item.sku || dbProduct?.sku || '',
-        productName: item.productName || item.product || dbProduct?.product || 'Item',
+      if (!dbProduct.isActive) {
+        return res.status(400).json({ error: `${dbProduct.product} is inactive and cannot be sold` });
+      }
+
+      if (dbProduct.stock < qty) {
+        return res.status(400).json({ error: `Insufficient stock for ${dbProduct.product}. Available: ${dbProduct.stock}` });
+      }
+
+      resolvedItems.push({
+        dbProduct,
         qty,
         price,
-        total: Number(item.total || qty * price)
+        total: Number(item.total || qty * price),
+        productName: item.productName || dbProduct.product,
+        sku: item.sku || dbProduct.sku,
       });
     }
+
+    for (const line of resolvedItems) {
+      line.dbProduct.stock -= line.qty;
+      await line.dbProduct.save();
+    }
+
+    const normalizedItems = resolvedItems.map((line) => ({
+      product: line.dbProduct._id,
+      sku: line.sku,
+      productName: line.productName,
+      qty: line.qty,
+      price: line.price,
+      total: line.total
+    }));
 
     const order = new Order({
       orderId,
       items: normalizedItems,
-      subtotal,
-      tax,
+      subtotal: Number(subtotal),
+      tax: Number(tax),
       totalAmount,
       paymentMethod,
-      customerName: customerName || 'Walk-in Customer',
+      customerName: String(customerName).trim(),
+      customerPhone: normalizedPhone,
       cashier: req.user.id,
       store: 'Main Store'
     });
@@ -70,7 +103,6 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Get All Orders
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const orders = await Order.find()
@@ -83,12 +115,11 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Get Orders Statistics
 router.get('/stats/daily', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const orders = await Order.aggregate([
       {
         $match: {
@@ -111,7 +142,6 @@ router.get('/stats/daily', authMiddleware, managerOrAdmin, async (req, res) => {
   }
 });
 
-// ✅ Get Single Order
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)

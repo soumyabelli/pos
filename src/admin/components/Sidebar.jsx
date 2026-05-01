@@ -26,7 +26,14 @@ const navItems = [
   { label: "Logout", icon: LogOut, path: "/admin/logout", critical: true },
 ];
 
-export default function Sidebar({ isMobileOpen, onCloseMobile }) {
+export default function Sidebar({ isMobileOpen, onCloseMobile, isCoolTheme = false }) {
+  const sidebarBg = isCoolTheme ? "bg-[#f4f8ff]" : "bg-[#fffaf4]";
+  const borderColor = isCoolTheme ? "border-[#cfe2ff]" : "border-[#e7d5c3]";
+  const hoverBg = isCoolTheme ? "hover:bg-[#e8f1ff]" : "hover:bg-[#f8eee3]";
+  const textMuted = isCoolTheme ? "text-[#4b678a]" : "text-[#8B6F47]";
+  const textBase = isCoolTheme ? "text-[#334b6f]" : "text-[#5E4634]";
+  const textStrong = isCoolTheme ? "text-[#1f3652]" : "text-[#3E2723]";
+
   return (
     <>
       {isMobileOpen && (
@@ -39,21 +46,21 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }) {
       )}
 
       {/* Desktop sidebar: in normal flex flow, no overlap */}
-      <aside className="relative z-20 hidden h-full w-72 shrink-0 border-r border-[#e7d5c3] bg-[#fffaf4] p-4 shadow-[8px_0_30px_rgba(92,61,34,0.08)] lg:flex">
+      <aside className={`relative z-20 hidden h-full w-72 shrink-0 border-r p-4 shadow-[8px_0_30px_rgba(92,61,34,0.08)] lg:flex ${borderColor} ${sidebarBg}`}>
         <div className="flex h-full w-full flex-col">
-          <div className="mb-4 flex items-center rounded-2xl border border-[#e7d5c3] bg-white px-3 py-3 shadow-sm">
+          <div className={`mb-4 flex items-center rounded-2xl border bg-white px-3 py-3 shadow-sm ${borderColor}`}>
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-content-center rounded-xl bg-gradient-to-br from-[#D4853D] to-[#6F4E37] text-white">
                 ☕
               </div>
               <div>
-                <p className="text-[1.2rem] leading-5 font-semibold tracking-tight text-[#3E2723]">Urban Crust</p>
-                <p className="mt-0.5 text-xs text-[#8B6F47]">Management System</p>
+                <p className={`text-[1.2rem] leading-5 font-semibold tracking-tight ${textStrong}`}>Urban Crust</p>
+                <p className={`mt-0.5 text-xs ${textMuted}`}>Management System</p>
               </div>
             </div>
           </div>
 
-          <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8B6F47]">Navigation</p>
+          <p className={`mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.2em] ${textMuted}`}>Navigation</p>
 
           <nav className="flex-1 overflow-y-auto pr-1">
             <ul className="m-0 list-none space-y-1.5 p-0">
@@ -71,10 +78,10 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }) {
                           ? "bg-[#d4853d] text-white shadow-lg shadow-[#d4853d]/30"
                           : item.critical
                             ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                            : "text-[#5E4634] hover:bg-[#f8eee3] hover:text-[#3E2723]"
-                      }`
-                    }
-                  >
+                            : `${textBase} ${hoverBg} ${isCoolTheme ? "hover:text-[#1f3652]" : "hover:text-[#3E2723]"}`
+                        }`
+                      }
+                    >
                     <Icon size={17} className="shrink-0" />
                     <span className="ml-3 tracking-[0.01em]">{item.label}</span>
                     {!item.critical && <ChevronRight size={14} className="ml-auto opacity-40 transition group-hover:opacity-100" />}
@@ -85,14 +92,14 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }) {
             </ul>
           </nav>
 
-          <div className="mt-4 rounded-2xl border border-[#e7d5c3] bg-white p-3">
+          <div className={`mt-4 rounded-2xl border bg-white p-3 ${borderColor}`}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-[#3E2723]">System Health</p>
-              <div className="grid h-8 w-8 place-content-center rounded-lg bg-[#f7efe5] text-[#6F4E37]">
+              <p className={`text-sm font-semibold ${textStrong}`}>System Health</p>
+              <div className={`grid h-8 w-8 place-content-center rounded-lg ${isCoolTheme ? "bg-[#e8f1ff] text-[#35557d]" : "bg-[#f7efe5] text-[#6F4E37]"}`}>
                 <BarChart3 size={14} />
               </div>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-[#8B6F47]">
+            <p className={`mt-2 text-xs leading-relaxed ${textMuted}`}>
               All channels synced. Inventory updates are live.
             </p>
             <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
@@ -105,32 +112,32 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }) {
 
       {/* Mobile drawer sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-[#e7d5c3] bg-[#fffaf4] p-4 shadow-[0_30px_80px_rgba(92,61,34,0.25)] transition-transform duration-300 lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r p-4 shadow-[0_30px_80px_rgba(92,61,34,0.25)] transition-transform duration-300 lg:hidden ${borderColor} ${sidebarBg} ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-full w-full flex-col">
-          <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#e7d5c3] bg-white px-3 py-3 shadow-sm">
+          <div className={`mb-4 flex items-center justify-between rounded-2xl border bg-white px-3 py-3 shadow-sm ${borderColor}`}>
             <div className="flex items-center gap-3">
               <div className="grid h-10 w-10 place-content-center rounded-xl bg-gradient-to-br from-[#D4853D] to-[#6F4E37] text-white">
                 ☕
               </div>
               <div>
-                <p className="text-[1.2rem] leading-5 font-semibold tracking-tight text-[#3E2723]">Urban Crust</p>
-                <p className="mt-0.5 text-xs text-[#8B6F47]">Management System</p>
+                <p className={`text-[1.2rem] leading-5 font-semibold tracking-tight ${textStrong}`}>Urban Crust</p>
+                <p className={`mt-0.5 text-xs ${textMuted}`}>Management System</p>
               </div>
             </div>
             <button
               type="button"
               onClick={onCloseMobile}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#e7d5c3] text-[#6F4E37] transition hover:bg-[#f8eee3]"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${borderColor} ${isCoolTheme ? "text-[#35557d] hover:bg-[#e8f1ff]" : "text-[#6F4E37] hover:bg-[#f8eee3]"}`}
               aria-label="Close sidebar"
             >
               <X size={16} />
             </button>
           </div>
 
-          <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8B6F47]">Navigation</p>
+          <p className={`mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.2em] ${textMuted}`}>Navigation</p>
 
           <nav className="flex-1 overflow-y-auto">
             <ul className="m-0 list-none space-y-1.5 p-0">
@@ -146,8 +153,8 @@ export default function Sidebar({ isMobileOpen, onCloseMobile }) {
                           isActive
                             ? "bg-[#d4853d] text-white shadow-lg shadow-[#d4853d]/30"
                             : item.critical
-                              ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                              : "text-[#5E4634] hover:bg-[#f8eee3] hover:text-[#3E2723]"
+                            ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                              : `${textBase} ${hoverBg} ${isCoolTheme ? "hover:text-[#1f3652]" : "hover:text-[#3E2723]"}`
                         }`
                       }
                     >

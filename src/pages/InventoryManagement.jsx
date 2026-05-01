@@ -97,7 +97,7 @@ export default function InventoryManagement() {
               placeholder="Search Food Items SKU or name..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className={`w-full pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm ${searchValue ? 'pl-4' : 'pl-11'}`}
+              className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all shadow-sm"
             />
           </div>
 

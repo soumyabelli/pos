@@ -1,25 +1,39 @@
-import { Search, LogOut, Coffee, Zap } from "lucide-react";
+import { Search, LogOut, Coffee, Zap, ScanLine } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function ProductGrid({ 
-  search, 
-  setSearch, 
-  handleKeyDown, 
-  categories, 
-  category, 
-  setCategory, 
-  filteredProducts, 
-  addToCart 
-}) {
-  const navigate = useNavigate();
+function isImageUrl(value) {
+  if (typeof value !== "string") return false;
+  return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:image");
+}
 
+export default function ProductGrid({
+  search,
+  setSearch,
+  handleKeyDown,
+  onOpenScanner,
+  scanNotice,
+  categories,
+  category,
+  setCategory,
+  filteredProducts,
+  addToCart,
+  loadingInventory,
+  inventoryError,
+}) {
   const getCategoryIcon = (cat) => {
-    switch(cat) {
-      case 'Coffee': return '☕';
-      case 'Drinks': return '🥤';
-      case 'Food': return '🍔';
-      case 'Dessert': return '🍰';
-      default: return '✨';
+    switch (cat) {
+      case "Coffee":
+        return "C";
+      case "Drinks":
+        return "D";
+      case "Food":
+        return "F";
+      case "Dessert":
+        return "S";
+      case "All":
+        return "*";
+      default:
+        return "#";
     }
   };
 
@@ -40,7 +54,7 @@ export default function ProductGrid({
               <LogOut size={18} />
             </button>
             <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
-              ☕
+              UC
             </div>
             <div>
               <h1 className="text-2xl font-black leading-tight tracking-tight text-[#3e2723] sm:text-3xl">Urban Crust POS</h1>
@@ -59,20 +73,40 @@ export default function ProductGrid({
         </div>
 
         <div className="mt-4 grid gap-3">
-          <label className="relative block">
-            {(!search || search.length === 0) && (
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+            <label className="relative block">
               <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
-            )}
-            <input
-              type="text"
-              placeholder="Scan SKU or search products"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className={`h-11 w-full rounded-xl border border-[#d9c4b3] bg-white pr-4 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20 placeholder:text-[#8b6f47] shadow-sm ${search ? 'pl-4' : 'pl-10'}`}
-              autoFocus
-            />
-          </label>
+              <input
+                type="text"
+                placeholder="Scan SKU / barcode or search products"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
+                autoFocus
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onOpenScanner}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d9c4b3] bg-white px-3 text-xs font-black uppercase tracking-wide text-[#6f4e37] transition hover:border-[#d4853d] hover:bg-[#fff7ef]"
+            >
+              <ScanLine size={16} />
+              Camera Scan
+            </button>
+          </div>
+
+          {scanNotice?.message && (
+            <p
+              className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
+                scanNotice.type === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}
+            >
+              {scanNotice.message}
+            </p>
+          )}
 
           <div className="flex gap-2 overflow-x-auto pb-1">
             {categories.map((cat) => (
@@ -93,14 +127,26 @@ export default function ProductGrid({
         </div>
       </header>
 
-      {/* Products Grid */}
-      <div className="min-h-0 flex-1 overflow-y-auto pb-10 pr-1 lg:pr-2 custom-scrollbar">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-2">
+        {inventoryError && (
+          <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
+            {inventoryError}
+          </div>
+        )}
+        {loadingInventory && (
+          <div className="mb-3 rounded-xl border border-[#e8d8cb] bg-white/70 px-3 py-2 text-sm font-semibold text-[#6f4e37]">
+            Loading products...
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filteredProducts.map((product) => {
             const outOfStock = product.stock <= 0;
+            const useImageTag = isImageUrl(product.image);
+
             return (
               <button
-                key={product.sku}
+                key={product._id || product.sku}
                 onClick={() => !outOfStock && addToCart(product)}
                 disabled={outOfStock}
                 className={`group rounded-2xl border bg-white p-3 text-left shadow-sm transition ${
@@ -109,10 +155,16 @@ export default function ProductGrid({
                     : "cursor-pointer border-[#d9c4b3] hover:-translate-y-0.5 hover:border-[#d4853d] hover:shadow-md active:translate-y-0"
                 }`}
               >
-                <div className={`mb-3 grid h-20 place-content-center rounded-xl border text-4xl ${
-                  outOfStock ? "border-[#e6d8cb] bg-[#fbf4ec]" : "border-[#e0cbb9] bg-[#fff8f2]"
-                }`}>
-                  {product.image}
+                <div
+                  className={`mb-3 grid h-20 place-content-center overflow-hidden rounded-xl border text-2xl ${
+                    outOfStock ? "border-[#e6d8cb] bg-[#fbf4ec]" : "border-[#e0cbb9] bg-[#fff8f2]"
+                  }`}
+                >
+                  {useImageTag ? (
+                    <img src={product.image} alt={product.product} className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{product.image || "Item"}</span>
+                  )}
                 </div>
 
                 <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8b6f47]">{product.sku}</p>
@@ -120,15 +172,17 @@ export default function ProductGrid({
 
                 <div className="mt-3 flex items-center justify-between border-t border-[#e9d7c8] pt-2">
                   <span className={`text-lg font-black ${outOfStock ? "text-[#ef4444]" : "text-[#d4853d]"}`}>
-                      ₹{product.price.toFixed(0)}
+                    Rs {Number(product.price || 0).toFixed(0)}
                   </span>
-                  <span className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
+                  <span
+                    className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
                       outOfStock
                         ? "bg-red-100 text-red-700"
                         : product.stock <= 3
                           ? "bg-amber-100 text-amber-700"
                           : "bg-emerald-100 text-emerald-700"
-                    }`}>
+                    }`}
+                  >
                     {outOfStock ? "Out" : `${product.stock} left`}
                   </span>
                 </div>

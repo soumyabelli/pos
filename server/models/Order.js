@@ -62,6 +62,11 @@ const orderSchema = new mongoose.Schema(
       default: 'Walk-in Customer',
       trim: true
     },
+    customerPhone: {
+      type: String,
+      default: '',
+      trim: true
+    },
     cashier: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

@@ -1,5 +1,9 @@
 import { ShoppingCart, Minus, Plus, X, Trash2 } from "lucide-react";
 
+function isImageUrl(value) {
+  return typeof value === "string" && (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:image"));
+}
+
 export default function CartSidebar({
   cart,
   removeFromCart,
@@ -43,7 +47,11 @@ export default function CartSidebar({
             >
               {/* Item Image */}
               <div className="w-12 h-12 bg-white rounded-lg border border-[#D9C4B3] flex items-center justify-center text-2xl flex-shrink-0">
-                {item.image}
+                {isImageUrl(item.image) ? (
+                  <img src={item.image} alt={item.product} className="h-full w-full rounded-lg object-cover" />
+                ) : (
+                  item.image
+                )}
               </div>
 
               {/* Item Details */}

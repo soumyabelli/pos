@@ -16,10 +16,10 @@ export default function Sidebar() {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { name: "POS", icon: ShoppingCart, path: "/pos" },
     { name: "Menu", icon: Utensils, path: "/admin/menu" },
-    { name: "Food Items", icon: Box, path: "/admin/inventory" },
+    { name: "Inventory", icon: Box, path: "/admin/inventory" },
     { name: "Orders", icon: ClipboardList, path: "/admin/orders" },
     { name: "Reports", icon: BarChart3, path: "/admin/reports" },
     { name: "Users", icon: Users, path: "/admin/users" },
@@ -32,7 +32,7 @@ export default function Sidebar() {
       <div className="flex flex-col h-full">
         <button
           className="p-8 flex items-center gap-4 text-left group"
-          onClick={() => navigate("/admin")}
+          onClick={() => navigate("/admin/dashboard")}
         >
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400 to-emerald-500 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-sky-500/30 group-hover:scale-105 transition-transform">
             UC
@@ -47,10 +47,8 @@ export default function Sidebar() {
           {menuItems.map((item) => {
             const Icon = item.icon;
             let isActive = location.pathname === item.path;
-            if (item.path === '/admin' && location.pathname === '/admin') {
-                isActive = true;
-            } else if (item.path === '/admin' && location.pathname.startsWith('/admin') && location.pathname !== '/admin/inventory' && location.pathname !== '/admin/menu' && location.pathname !== '/admin/orders' && location.pathname !== '/admin/reports' && location.pathname !== '/admin/users' && location.pathname !== '/admin/settings') {
-                isActive = true;
+            if (item.path === "/admin/dashboard" && location.pathname === "/admin") {
+              isActive = true;
             }
 
             return (

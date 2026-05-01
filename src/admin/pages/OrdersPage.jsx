@@ -9,7 +9,7 @@ function badge(status) {
 }
 
 export default function OrdersPage() {
-  const { orders } = useAdminData();
+  const { orders, error } = useAdminData();
 
   return (
     <div className="space-y-6">
@@ -18,7 +18,8 @@ export default function OrdersPage() {
         <p className="mt-1 text-base text-[#8B6F47]">Track omnichannel order processing and current status.</p>
       </section>
 
-      <Card title="Orders Table" subtitle="Mock order data with status badges">
+      <Card title="Orders Table" subtitle="Live order data with status badges">
+        {error && <p className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
         <DataTable
           rowKey="id"
           data={orders}
