@@ -9,13 +9,22 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 
-const ORDER_ROWS = [
-  { id: "#10234", customer: "Jane Doe", initials: "JD", items: 3, date: "Oct 12, 2023", total: 156.0, status: "Completed" },
-  { id: "#10235", customer: "Mark Smith", initials: "MS", items: 1, date: "Oct 12, 2023", total: 42.5, status: "Pending" },
-  { id: "#10236", customer: "Ana Lopez", initials: "AL", items: 5, date: "Oct 11, 2023", total: 892.1, status: "Cancelled" },
-  { id: "#10237", customer: "Robert White", initials: "RW", items: 2, date: "Oct 11, 2023", total: 210.0, status: "Completed" },
-  { id: "#10238", customer: "Kelly Miller", initials: "KM", items: 12, date: "Oct 10, 2023", total: 1420.5, status: "Completed" },
-];
+const ORDER_ROWS = Array.from({ length: 26 }).map((_, i) => {
+  const statuses = ["Completed", "Pending", "Cancelled"];
+  const customers = [
+    "Ronald McDonald", "Colonel Sanders", "Wendy Thomas", "Howard Schultz", 
+    "John Schnatter", "Glen Bell", "Dan Cathy", "Steve Ells"
+  ];
+  return {
+    id: `#10${234 + i}`,
+    customer: customers[i % customers.length],
+    initials: customers[i % customers.length].split(" ").map((n) => n[0]).join(""),
+    items: (i % 5) + 1,
+    date: `Oct ${(i % 31) + 1}, 2023`,
+    total: parseFloat((Math.random() * 50 + 10).toFixed(2)),
+    status: statuses[i % statuses.length],
+  };
+});
 
 const STATUS_TABS = ["All", "Pending", "Completed", "Cancelled"];
 
@@ -37,6 +46,8 @@ export default function OrderManagement() {
   const displayName = getDisplayName();
   const [searchValue, setSearchValue] = useState("");
   const [activeTab, setActiveTab] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const filteredOrders = useMemo(() => {
     return ORDER_ROWS.filter((row) => {
@@ -48,6 +59,12 @@ export default function OrderManagement() {
       return matchesSearch && matchesTab;
     });
   }, [searchValue, activeTab]);
+
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const currentOrders = filteredOrders.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const completedCount = ORDER_ROWS.filter((item) => item.status === "Completed").length;
   const pendingCount = ORDER_ROWS.filter((item) => item.status === "Pending").length;
@@ -172,7 +189,7 @@ export default function OrderManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order) => (
+                  {currentOrders.map((order) => (
                     <tr key={order.id}>
                       <td className="ord-id">{order.id}</td>
                       <td>
@@ -194,11 +211,20 @@ export default function OrderManagement() {
             </div>
 
             <footer className="ord-footer">
-              <p>Showing 1-{filteredOrders.length} of 1,240 orders</p>
+              <p>Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders</p>
               <div className="ord-pagination">
-                <button type="button" className="active">1</button>
-                <button type="button">2</button>
-                <button type="button">3</button>
+                <button type="button" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Prev</button>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i + 1}
+                    type="button"
+                    className={currentPage === i + 1 ? "active" : ""}
+                    onClick={() => setCurrentPage(i + 1)}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button type="button" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</button>
               </div>
             </footer>
           </section>

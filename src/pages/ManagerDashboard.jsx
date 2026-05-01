@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -11,6 +12,13 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -110,12 +118,20 @@ export default function ManagerDashboard() {
             <h1 className="text-4xl font-black text-[#3E2723] mb-2">Manager Dashboard</h1>
             <p className="text-[#8B6F47]">Create and assign tasks to your team</p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-[#D4853D] text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-[#C97030] transition-all"
-          >
-            <Plus size={20} /> New Task
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-[#D4853D] text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-[#C97030] transition-all"
+            >
+              <Plus size={20} /> New Task
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-white text-rose-600 border border-rose-200 px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-rose-50 transition-all shadow-sm"
+            >
+              <LogOut size={20} /> Logout
+            </button>
+          </div>
         </div>
 
         {error && (

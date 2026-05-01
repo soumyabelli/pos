@@ -1,4 +1,5 @@
-import { ScanLine, Search } from "lucide-react";
+import { Search, LogOut, Coffee, Zap, ScanLine } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function isImageUrl(value) {
   if (typeof value !== "string") return false;
@@ -41,6 +42,17 @@ export default function ProductGrid({
       <header className="mb-4 rounded-2xl border border-[#d9c4b3]/70 bg-white/70 p-4 shadow-sm backdrop-blur-sm sm:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                navigate('/login');
+              }}
+              className="p-2.5 bg-white/50 border border-[#d9c4b3]/50 hover:bg-rose-50 text-[#8b6f47] hover:text-rose-600 rounded-xl transition-colors shadow-sm"
+              title="Log Out"
+            >
+              <LogOut size={18} />
+            </button>
             <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
               UC
             </div>
