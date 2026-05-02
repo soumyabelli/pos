@@ -150,14 +150,14 @@ export default function ProductManagement() {
             </div>
 
             {/* Category Pills */}
-            <div className="flex gap-3 mb-8 overflow-x-auto pb-2 custom-scrollbar">
+            <div className="flex flex-wrap items-center gap-3 mb-8 overflow-hidden pb-2 custom-scrollbar">
               {CATEGORY_OPTIONS.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
+                  className={`min-w-max whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition duration-200 ease-out border ${
                     selectedCategory === cat 
-                      ? "bg-gradient-to-r from-sky-500 to-emerald-500 text-white border-transparent shadow-lg shadow-sky-500/30" 
+                      ? "bg-gradient-to-r from-sky-500 to-emerald-500 text-white border-transparent shadow-lg shadow-sky-500/20" 
                       : "bg-white text-slate-600 border-slate-200 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-200"
                   }`}
                 >

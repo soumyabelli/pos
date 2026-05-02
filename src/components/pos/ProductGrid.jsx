@@ -96,18 +96,17 @@ export default function ProductGrid({
             </p>
           )}
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex flex-wrap items-center gap-4 overflow-x-auto rounded-3xl border border-[#d9c4b3]/40 bg-[#f7efe2]/70 p-3 shadow-sm shadow-[#8f6b4b]/10 backdrop-blur-sm pb-3">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                className={`min-w-max whitespace-nowrap rounded-full border px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#5d4328] shadow-[0_14px_40px_-26px_rgba(15,23,42,0.25)] transition duration-200 ease-out backdrop-blur-sm ${
                   category === cat
-                    ? "border-[#d4853d] bg-[#d4853d] text-white"
-                    : "border-[#d9c4b3] bg-white text-[#6f4e37] hover:border-[#d4853d]"
+                    ? "border-[#f3d0ab] bg-white/90 text-[#3d2208] shadow-[0_20px_65px_-30px_rgba(212,133,61,0.45)]"
+                    : "border-white/40 bg-white/20 hover:border-white/70 hover:bg-white/50 hover:text-[#3d2208]"
                 }`}
               >
-                <span className="mr-1">{getCategoryIcon(cat)}</span>
                 {cat}
               </button>
             ))}
