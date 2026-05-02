@@ -9,8 +9,12 @@ const SUPPORTED_FORMATS = [
   "upc_e",
   "code_128",
   "code_39",
+  "code_93",
   "itf",
   "qr_code",
+  "data_matrix",
+  "pdf_417",
+  "aztec",
 ];
 
 export default function BarcodeScannerModal({ isOpen, onClose, onDetected }) {
@@ -60,12 +64,8 @@ export default function BarcodeScannerModal({ isOpen, onClose, onDetected }) {
         return;
       }
 
-      const useNativeBarcodeDetector = "BarcodeDetector" in window;
-      if (!useNativeBarcodeDetector) {
-        setStatusMessage("Using fallback scanner for better browser support.");
-      }
-
-      if (useNativeBarcodeDetector) {
+      const useNativeBarcodeDetector = false; // Disabled to ensure compatibility with all formats
+      if (useNativeBarcodeDetector && "BarcodeDetector" in window) {
         try {
           const supportedFormats = await window.BarcodeDetector.getSupportedFormats();
           const formats = SUPPORTED_FORMATS.filter((format) => supportedFormats.includes(format));
