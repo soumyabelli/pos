@@ -38,17 +38,44 @@ export default function POS() {
     const digits = String(rawPhone || "").replace(/\D/g, "");
     if (!digits) return "";
 
-    // Default to India country code if cashier enters a 10-digit local number.
-    if (digits.length === 10) return `91${digits}`;
+    if (digits.length === 11 && digits.startsWith("0")) {
+      return `91${digits.slice(1)}`;
+    }
+    if (digits.length === 10) {
+      return `91${digits}`;
+    }
+    if (digits.length === 12 && digits.startsWith("91")) {
+      return digits;
+    }
+    if (digits.length > 12 && digits.startsWith("+")) {
+      return digits.slice(1);
+    }
     return digits;
   };
 
-  const buildWhatsAppLink = (name, phone, amount) => {
+  const buildWhatsAppLink = (name, phone, amount, orderId, items = []) => {
     const whatsappPhone = buildWhatsAppPhone(phone);
     if (!whatsappPhone) return "";
 
-    const message = `Hi ${name || "there"}, thanks for coming to Urban Crust. Your payment of Rs ${amount.toFixed(0)} is received.`;
-    return `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+    const customerName = name ? name.trim() : "there";
+    const orderReference = orderId || `ORD-${Date.now()}`;
+    const itemSummary = items.length
+      ? items
+          .slice(0, 4)
+          .map((item) => `${item.qty}x ${item.product}`)
+          .join(" · ")
+      : "Your order";
+
+    const offerCode = `UCRUST${String(Date.now()).slice(-6)}`;
+    const message = `Hi ${customerName}!\n\n` +
+      `Your order ${orderReference} at Urban Crust has been confirmed.\n` +
+      `${itemSummary}${items.length > 4 ? ` +${items.length - 4} more` : ""}\n\n` +
+      `Total paid: ₹${amount.toFixed(0)}.\n\n` +
+      `We loved serving you today — come back soon!\n` +
+      `Show this message next time and use code ${offerCode} for 12% off on your next order.\n\n` +
+      `Order again here: https://urbancrust.example.com`;
+
+    return `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(message)}`;
   };
 
   const fetchInventory = useCallback(async () => {
@@ -268,8 +295,9 @@ export default function POS() {
       const savedOrder = res.data.order;
       await fetchInventory();
 
+      const orderIdentifier = savedOrder?.orderId || `ORD-${Date.now()}`;
       setReceiptData({
-        orderId: savedOrder?.orderId || `ORD-${Date.now()}`,
+        orderId: orderIdentifier,
         date: new Date().toLocaleString(),
         items: [...cart],
         customerName: payload.customerName,
@@ -278,13 +306,25 @@ export default function POS() {
         tax,
         total,
         method,
-        whatsappLink: buildWhatsAppLink(payload.customerName, payload.customerPhone, total),
+        whatsappLink: buildWhatsAppLink(
+          payload.customerName,
+          payload.customerPhone,
+          total,
+          orderIdentifier,
+          cart,
+        ),
       });
 
       setIsCheckoutOpen(false);
       setIsInvoiceOpen(true);
 
-      const whatsappLink = buildWhatsAppLink(payload.customerName, payload.customerPhone, total);
+      const whatsappLink = buildWhatsAppLink(
+        payload.customerName,
+        payload.customerPhone,
+        total,
+        orderIdentifier,
+        cart,
+      );
       if (whatsappLink) {
         window.open(whatsappLink, "_blank", "noopener,noreferrer");
       }
