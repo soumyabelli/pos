@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Trash2 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/api';
 
 export default function ManagerDashboard() {
   const [tasks, setTasks] = useState([]);
@@ -29,7 +29,7 @@ export default function ManagerDashboard() {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/tasks`, {
+      const res = await axios.get(`${API_BASE_URL}/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(res.data);
@@ -42,7 +42,7 @@ export default function ManagerDashboard() {
 
   const fetchWorkers = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/users/workers/list`, {
+      const res = await axios.get(`${API_BASE_URL}/users/workers/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWorkers(res.data);
@@ -54,7 +54,7 @@ export default function ManagerDashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE}/tasks`, formData, {
+      await axios.post(`${API_BASE_URL}/tasks`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ 
@@ -76,7 +76,7 @@ export default function ManagerDashboard() {
   const handleDelete = async (taskId) => {
     if (window.confirm('Delete this task?')) {
       try {
-        await axios.delete(`${API_BASE}/tasks/${taskId}`, {
+        await axios.delete(`${API_BASE_URL}/tasks/${taskId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchTasks();

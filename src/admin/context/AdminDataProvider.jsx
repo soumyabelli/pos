@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { AdminDataContext } from "./adminDataContext";
 
-const API_BASE = "http://localhost:5000/api";
+import { API_BASE_URL } from "../../config/api";
 
 function toNumber(value, fallback = 0) {
   const next = Number(value);
@@ -122,11 +122,11 @@ export function AdminDataProvider({ children }) {
 
     try {
       const [productsRes, categoriesRes, usersRes, ordersRes, settingsRes] = await Promise.all([
-        axios.get(`${API_BASE}/products/admin/all`, { headers }),
-        axios.get(`${API_BASE}/categories`, { headers }),
-        axios.get(`${API_BASE}/users`, { headers }),
-        axios.get(`${API_BASE}/orders`, { headers }),
-        axios.get(`${API_BASE}/settings`, { headers }),
+        axios.get(`${API_BASE_URL}/products/admin/all`, { headers }),
+        axios.get(`${API_BASE_URL}/categories`, { headers }),
+        axios.get(`${API_BASE_URL}/users`, { headers }),
+        axios.get(`${API_BASE_URL}/orders`, { headers }),
+        axios.get(`${API_BASE_URL}/settings`, { headers }),
       ]);
 
       setProducts((productsRes.data || []).map(mapProduct));
@@ -149,7 +149,7 @@ export function AdminDataProvider({ children }) {
 
   const addProduct = async (payload) => {
     await axios.post(
-      `${API_BASE}/products`,
+      `${API_BASE_URL}/products`,
       {
         product: payload.name,
         category: payload.category,
@@ -169,7 +169,7 @@ export function AdminDataProvider({ children }) {
 
   const updateProduct = async (productId, updates) => {
     await axios.put(
-      `${API_BASE}/products/${productId}`,
+      `${API_BASE_URL}/products/${productId}`,
       {
         product: updates.name,
         category: updates.category,
@@ -188,13 +188,13 @@ export function AdminDataProvider({ children }) {
   };
 
   const deleteProduct = async (productId) => {
-    await axios.delete(`${API_BASE}/products/${productId}`, { headers });
+    await axios.delete(`${API_BASE_URL}/products/${productId}`, { headers });
     await refreshAll();
   };
 
   const addCategory = async (payload) => {
     await axios.post(
-      `${API_BASE}/categories`,
+      `${API_BASE_URL}/categories`,
       { name: payload.name, description: payload.description || "" },
       { headers },
     );
@@ -202,13 +202,13 @@ export function AdminDataProvider({ children }) {
   };
 
   const deleteCategory = async (categoryId) => {
-    await axios.delete(`${API_BASE}/categories/${categoryId}`, { headers });
+    await axios.delete(`${API_BASE_URL}/categories/${categoryId}`, { headers });
     await refreshAll();
   };
 
   const addUser = async (payload) => {
     await axios.post(
-      `${API_BASE}/users`,
+      `${API_BASE_URL}/users`,
       {
         name: payload.name,
         username: payload.username,
@@ -223,7 +223,7 @@ export function AdminDataProvider({ children }) {
   };
 
   const removeUser = async (userId) => {
-    await axios.delete(`${API_BASE}/users/${userId}`, { headers });
+    await axios.delete(`${API_BASE_URL}/users/${userId}`, { headers });
     await refreshAll();
   };
 
@@ -233,7 +233,7 @@ export function AdminDataProvider({ children }) {
       currency: nextSettings.currency,
       taxRate: toNumber(nextSettings.taxRate, 0),
     };
-    const res = await axios.put(`${API_BASE}/settings`, payload, { headers });
+    const res = await axios.put(`${API_BASE_URL}/settings`, payload, { headers });
     setSettings(mapSettings(res.data?.settings));
   };
 

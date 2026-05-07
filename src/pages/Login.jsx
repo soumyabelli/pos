@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "../index.css";
 
-const API_BASE = "http://localhost:5000/api";
+import { API_BASE_URL } from "../config/api";
 
 export default function Login() {
   const [identifier, setIdentifier] = useState("");
@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       // Call backend login API
-      const res = await axios.post(`${API_BASE}/auth/login`, { 
+      const res = await axios.post(`${API_BASE_URL}/auth/login`, { 
         identifier,
         password 
       });

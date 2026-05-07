@@ -7,7 +7,7 @@ import CartSidebar from "../components/pos/CartSidebar";
 import CheckoutOverlay from "../components/pos/CheckoutOverlay";
 import BarcodeScannerModal from "../components/pos/BarcodeScannerModal";
 
-const API_BASE = "http://localhost:5000/api";
+import { API_BASE_URL } from "../config/api";
 const DEFAULT_TAX_RATE = 0.08;
 
 function toNumber(value, fallback = 0) {
@@ -80,7 +80,7 @@ export default function POS() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/products`);
+      const res = await axios.get(`${API_BASE_URL}/products`);
       setInventory(Array.isArray(res.data) ? res.data : []);
       setInventoryError("");
     } catch (error) {
@@ -95,7 +95,7 @@ export default function POS() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await axios.get(`${API_BASE}/settings`, {
+      const res = await axios.get(`${API_BASE_URL}/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const nextTaxRate = toNumber(res.data?.taxRate, 8.5) / 100;
@@ -288,7 +288,7 @@ export default function POS() {
     };
 
     try {
-      const res = await axios.post(`${API_BASE}/orders`, payload, {
+      const res = await axios.post(`${API_BASE_URL}/orders`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
