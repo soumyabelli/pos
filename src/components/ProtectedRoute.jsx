@@ -21,14 +21,20 @@ function readRole() {
   }
 }
 
+function normalizeRole(role) {
+  const normalized = String(role || "").toLowerCase();
+  return normalized === "worker" ? "user" : normalized;
+}
+
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const token = localStorage.getItem("token");
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
-  const role = readRole();
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+  const role = normalizeRole(readRole());
+  const normalizedAllowedRoles = allowedRoles.map((r) => normalizeRole(r));
+  if (normalizedAllowedRoles.length > 0 && !normalizedAllowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 

@@ -47,7 +47,7 @@ function App() {
         <Route
           path="/pos"
           element={
-            <ProtectedRoute allowedRoles={["admin", "manager", "worker"]}>
+            <ProtectedRoute allowedRoles={["admin", "manager", "user", "worker"]}>
               <POS />
             </ProtectedRoute>
           }

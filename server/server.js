@@ -19,10 +19,17 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
+if (missingEnvVars.length > 0) {
+  throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+}
+
 const rawAllowedOrigins = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = rawAllowedOrigins
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
   .filter(Boolean);
 
 if (process.env.VERCEL_URL) {
@@ -33,7 +40,8 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = origin ? origin.replace(/\/+$/, '') : origin;
+      if (!origin || allowedOrigins.includes(normalizedOrigin)) {
         callback(null, true);
         return;
       }
@@ -73,25 +81,28 @@ async function ensureDefaultUsers() {
       username: 'user',
       email: 'user@urbancrust.com',
       password: 'user',
-      role: 'worker'
+      role: 'user'
     }
   ];
 
   for (const seedUser of defaultUsers) {
-    const existingUser = await User.findOne({ username: seedUser.username }).select('+password');
+    let user = await User.findOne({
+      $or: [{ username: seedUser.username.toLowerCase() }, { email: seedUser.email.toLowerCase() }]
+    }).select('+password');
 
-    if (!existingUser) {
+    if (!user) {
       await User.create({ ...seedUser, store: 'Main Store' });
       continue;
     }
 
-    existingUser.name = seedUser.name;
-    existingUser.email = seedUser.email;
-    existingUser.role = seedUser.role;
-    existingUser.store = 'Main Store';
-    existingUser.isActive = true;
-    existingUser.password = seedUser.password;
-    await existingUser.save();
+    user.name = seedUser.name;
+    user.username = seedUser.username;
+    user.email = seedUser.email;
+    user.role = seedUser.role;
+    user.store = 'Main Store';
+    user.isActive = true;
+    user.password = seedUser.password;
+    await user.save();
   }
 }
 
@@ -227,6 +238,13 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    mongoState: mongoose.connection.readyState
+  });
+});
+
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
   res.status(err.status || 500).json({
@@ -237,4 +255,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
 });

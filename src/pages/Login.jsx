@@ -40,7 +40,11 @@ export default function Login() {
         navigate("/pos");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Login failed. Please try again.");
+      if (!err.response) {
+        setError("Unable to reach server. Please check deployment/API URL.");
+      } else {
+        setError(err.response?.data?.error || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

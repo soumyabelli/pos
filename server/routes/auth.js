@@ -5,6 +5,13 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+function normalizeRole(inputRole) {
+  const role = String(inputRole || 'user').toLowerCase();
+  if (role === 'admin') return 'admin';
+  if (role === 'manager') return 'manager';
+  return 'user';
+}
+
 // ✅ Register
 router.post('/register', async (req, res) => {
   try {
@@ -28,7 +35,7 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password,
-      role: role || 'worker',
+      role: normalizeRole(role),
       store: store || 'Main Store'
     });
 

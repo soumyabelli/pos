@@ -84,11 +84,11 @@ function mapSettings(settings) {
 }
 
 function roleToApi(role) {
-  if (!role) return "worker";
+  if (!role) return "user";
   const normalized = role.toLowerCase();
   if (normalized === "admin") return "admin";
   if (normalized === "manager") return "manager";
-  return "worker";
+  return "user";
 }
 
 export function AdminDataProvider({ children }) {

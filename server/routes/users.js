@@ -5,10 +5,10 @@ import { authMiddleware, adminOnly, managerOrAdmin } from '../middleware/auth.js
 const router = express.Router();
 
 function normalizeRole(inputRole) {
-  const role = String(inputRole || 'worker').toLowerCase();
+  const role = String(inputRole || 'user').toLowerCase();
   if (role === 'admin') return 'admin';
   if (role === 'manager') return 'manager';
-  return 'worker';
+  return 'user';
 }
 
 // Get all users (Admin only)
@@ -24,7 +24,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 // Get workers (Manager/Admin)
 router.get('/workers/list', authMiddleware, managerOrAdmin, async (req, res) => {
   try {
-    const workers = await User.find({ role: 'worker', isActive: true }).select('name username email role store');
+    const workers = await User.find({ role: { $in: ['worker', 'user'] }, isActive: true }).select('name username email role store');
     res.json(workers);
   } catch (error) {
     res.status(500).json({ error: error.message });
