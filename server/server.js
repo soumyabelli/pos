@@ -15,6 +15,8 @@ import Product from './models/Product.js';
 import Setting from './models/Setting.js';
 import User from './models/User.js';
 
+console.log("🚀 SERVER.JS IS RUNNING");
+
 dotenv.config();
 
 const app = express();
@@ -29,7 +31,7 @@ if (missingEnvVars.length > 0) {
 const rawAllowedOrigins = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = rawAllowedOrigins
   .split(',')
-  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
   .filter(Boolean);
 
 if (process.env.VERCEL_URL) {
@@ -48,20 +50,23 @@ function isAllowedOrigin(origin) {
 }
 
 app.use(helmet());
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (isAllowedOrigin(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new Error(`CORS blocked for origin: ${origin}`));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+// Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
+app.options(/.*/, cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
