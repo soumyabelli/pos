@@ -36,12 +36,22 @@ if (process.env.VERCEL_URL) {
   allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
 }
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+  if (allowedOrigins.includes(normalizedOrigin)) return true;
+
+  // Allow Vercel preview/production frontend domains.
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(normalizedOrigin)) return true;
+
+  return false;
+}
+
 app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      const normalizedOrigin = origin ? origin.replace(/\/+$/, '') : origin;
-      if (!origin || allowedOrigins.includes(normalizedOrigin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
