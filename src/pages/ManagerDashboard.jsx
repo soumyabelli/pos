@@ -29,7 +29,7 @@ export default function ManagerDashboard() {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/tasks`, {
+      const res = await axios.get(`${API_BASE_URL}/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(res.data);
@@ -42,7 +42,7 @@ export default function ManagerDashboard() {
 
   const fetchWorkers = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/users/workers/list`, {
+      const res = await axios.get(`${API_BASE_URL}/api/users/workers/list`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWorkers(res.data);
@@ -54,7 +54,7 @@ export default function ManagerDashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE_URL}/tasks`, formData, {
+      await axios.post(`${API_BASE_URL}/api/tasks`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ 
@@ -76,7 +76,7 @@ export default function ManagerDashboard() {
   const handleDelete = async (taskId) => {
     if (window.confirm('Delete this task?')) {
       try {
-        await axios.delete(`${API_BASE_URL}/tasks/${taskId}`, {
+        await axios.delete(`${API_BASE_URL}/api/tasks/${taskId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchTasks();
@@ -274,3 +274,5 @@ export default function ManagerDashboard() {
     </div>
   );
 }
+
+

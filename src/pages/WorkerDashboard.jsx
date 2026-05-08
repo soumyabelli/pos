@@ -18,7 +18,7 @@ export default function WorkerDashboard() {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/tasks`, {
+      const res = await axios.get(`${API_BASE_URL}/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(res.data);
@@ -29,7 +29,7 @@ export default function WorkerDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/tasks/stats/summary`, {
+      const res = await axios.get(`${API_BASE_URL}/api/tasks/stats/summary`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
@@ -40,7 +40,7 @@ export default function WorkerDashboard() {
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      await axios.patch(`${API_BASE_URL}/tasks/${taskId}/status`, 
+      await axios.patch(`${API_BASE_URL}/api/tasks/${taskId}/status`, 
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -193,3 +193,5 @@ export default function WorkerDashboard() {
     </div>
   );
 }
+
+

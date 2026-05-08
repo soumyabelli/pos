@@ -12,7 +12,7 @@ export default function Register() {
   });
 
   const handleRegister = async () => {
-    await axios.post(`${API_BASE_URL}/auth/register`, form);
+    await axios.post(`${API_BASE_URL}/api/auth/register`, form);
     alert("Registered Successfully");
   };
 
@@ -65,3 +65,5 @@ export default function Register() {
     </div>
   );
 }
+
+

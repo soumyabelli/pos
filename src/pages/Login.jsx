@@ -19,7 +19,7 @@ export default function Login() {
 
     try {
       // Call backend login API
-      const res = await axios.post(`${API_BASE_URL}/auth/login`, { 
+      const res = await axios.post(`${API_BASE_URL}/api/auth/login`, { 
         identifier,
         password 
       });
@@ -120,3 +120,5 @@ export default function Login() {
     </div>
   );
 }
+
+

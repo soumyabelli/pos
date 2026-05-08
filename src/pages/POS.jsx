@@ -80,7 +80,7 @@ export default function POS() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/products`);
+      const res = await axios.get(`${API_BASE_URL}/api/products`);
       setInventory(Array.isArray(res.data) ? res.data : []);
       setInventoryError("");
     } catch (error) {
@@ -95,7 +95,7 @@ export default function POS() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await axios.get(`${API_BASE_URL}/settings`, {
+      const res = await axios.get(`${API_BASE_URL}/api/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const nextTaxRate = toNumber(res.data?.taxRate, 8.5) / 100;
@@ -288,7 +288,7 @@ export default function POS() {
     };
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/orders`, payload, {
+      const res = await axios.post(`${API_BASE_URL}/api/orders`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -398,3 +398,5 @@ export default function POS() {
     </div>
   );
 }
+
+
