@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Clock, Check, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Clock, Check, AlertCircle, CheckCircle2, LogOut } from 'lucide-react';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -10,6 +11,13 @@ export default function WorkerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -89,9 +97,18 @@ export default function WorkerDashboard() {
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-[#3E2723] mb-2">My Tasks</h1>
-          <p className="text-[#8B6F47]">Manage your assigned tasks and orders</p>
+        <div className="mb-8 flex justify-between items-center bg-white/60 p-6 rounded-2xl border border-[#D9C4B3] shadow-sm backdrop-blur-sm">
+          <div>
+            <h1 className="text-4xl font-black text-[#3E2723] mb-2">My Tasks</h1>
+            <p className="text-[#8B6F47]">Manage your assigned tasks and orders</p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-xl font-bold hover:bg-red-100 transition-all hover:scale-105 shadow-sm border border-red-100"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
 
         {error && (

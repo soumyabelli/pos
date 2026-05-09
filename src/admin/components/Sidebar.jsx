@@ -64,31 +64,50 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, isCoolTheme = fal
 
           <nav className="flex-1 overflow-y-auto pr-1">
             <ul className="m-0 list-none space-y-1.5 p-0">
-            {navItems.map((item) => {
-              const Icon = item.icon;
+              {navItems.map((item) => {
+                const Icon = item.icon;
 
-              return (
-                <li key={item.label} className="list-none">
-                  <NavLink
-                    to={item.path}
-                    onClick={onCloseMobile}
-                    className={({ isActive }) =>
-                      `group flex min-h-11 items-center rounded-xl px-3 py-2.5 text-[0.95rem] font-medium transition ${
-                        isActive
-                          ? "bg-[#d4853d] text-white shadow-lg shadow-[#d4853d]/30"
-                          : item.critical
-                            ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                            : `${textBase} ${hoverBg} ${isCoolTheme ? "hover:text-[#1f3652]" : "hover:text-[#3E2723]"}`
-                        }`
-                      }
-                    >
-                    <Icon size={17} className="shrink-0" />
-                    <span className="ml-3 tracking-[0.01em]">{item.label}</span>
-                    {!item.critical && <ChevronRight size={14} className="ml-auto opacity-40 transition group-hover:opacity-100" />}
-                  </NavLink>
-                </li>
-              );
-            })}
+                if (item.label === "Logout") {
+                  return (
+                    <li key={item.label} className="list-none">
+                      <button
+                        onClick={() => {
+                          onCloseMobile?.();
+                          localStorage.removeItem("token");
+                          localStorage.removeItem("user");
+                          window.location.href = "/login";
+                        }}
+                        className="group flex w-full min-h-11 items-center rounded-xl px-3 py-2.5 text-[0.95rem] font-medium transition text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                      >
+                        <Icon size={17} className="shrink-0" />
+                        <span className="ml-3 tracking-[0.01em]">{item.label}</span>
+                      </button>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={item.label} className="list-none">
+                    <NavLink
+                      to={item.path}
+                      onClick={onCloseMobile}
+                      className={({ isActive }) =>
+                        `group flex min-h-11 items-center rounded-xl px-3 py-2.5 text-[0.95rem] font-medium transition ${
+                          isActive
+                            ? "bg-[#d4853d] text-white shadow-lg shadow-[#d4853d]/30"
+                            : item.critical
+                              ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                              : `${textBase} ${hoverBg} ${isCoolTheme ? "hover:text-[#1f3652]" : "hover:text-[#3E2723]"}`
+                          }`
+                        }
+                      >
+                      <Icon size={17} className="shrink-0" />
+                      <span className="ml-3 tracking-[0.01em]">{item.label}</span>
+                      {!item.critical && <ChevronRight size={14} className="ml-auto opacity-40 transition group-hover:opacity-100" />}
+                    </NavLink>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
 
@@ -143,6 +162,26 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, isCoolTheme = fal
             <ul className="m-0 list-none space-y-1.5 p-0">
               {navItems.map((item) => {
                 const Icon = item.icon;
+
+                if (item.label === "Logout") {
+                  return (
+                    <li key={`mobile-${item.label}`} className="list-none">
+                      <button
+                        onClick={() => {
+                          onCloseMobile?.();
+                          localStorage.removeItem("token");
+                          localStorage.removeItem("user");
+                          window.location.href = "/login";
+                        }}
+                        className="group flex w-full min-h-11 items-center rounded-xl px-3 py-2.5 text-[0.95rem] font-medium transition text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                      >
+                        <Icon size={17} className="shrink-0" />
+                        <span className="ml-3 tracking-[0.01em]">{item.label}</span>
+                      </button>
+                    </li>
+                  );
+                }
+
                 return (
                   <li key={`mobile-${item.label}`} className="list-none">
                     <NavLink

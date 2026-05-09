@@ -5,7 +5,6 @@ import "../index.css";
 import ProductGrid from "../components/pos/ProductGrid";
 import CartSidebar from "../components/pos/CartSidebar";
 import CheckoutOverlay from "../components/pos/CheckoutOverlay";
-import BarcodeScannerModal from "../components/pos/BarcodeScannerModal";
 
 const API_BASE = "http://localhost:5000/api";
 const DEFAULT_TAX_RATE = 0.08;
@@ -26,7 +25,6 @@ export default function POS() {
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -195,8 +193,7 @@ export default function POS() {
     const normalizedInput = search.trim().toLowerCase();
     const scannedProduct = inventory.find(
       (item) =>
-        (item.sku || "").toLowerCase() === normalizedInput ||
-        (item.barcode || "").toLowerCase() === normalizedInput,
+        (item.sku || "").toLowerCase() === normalizedInput
     );
     if (scannedProduct && scannedProduct.stock > 0) {
       addToCart(scannedProduct);
@@ -208,34 +205,6 @@ export default function POS() {
       showScanNotice("error", `No product found for code: ${search.trim()}`);
     }
   };
-
-  const handleCameraScan = useCallback(
-    (codeValue) => {
-      const normalizedInput = String(codeValue || "").trim().toLowerCase();
-      if (!normalizedInput) return;
-
-      const scannedProduct = inventory.find(
-        (item) =>
-          (item.sku || "").toLowerCase() === normalizedInput ||
-          (item.barcode || "").toLowerCase() === normalizedInput,
-      );
-
-      if (!scannedProduct) {
-        showScanNotice("error", `No product found for code: ${codeValue}`);
-        return;
-      }
-
-      if (scannedProduct.stock <= 0) {
-        showScanNotice("error", `${scannedProduct.product} is out of stock`);
-        return;
-      }
-
-      addToCart(scannedProduct);
-      setSearch("");
-      showScanNotice("success", `${scannedProduct.product} added to cart`);
-    },
-    [inventory, showScanNotice],
-  );
 
   useEffect(
     () => () => {
@@ -342,16 +311,13 @@ export default function POS() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f8efe4] text-slate-900">
-      <div className="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[#d4853d]/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 right-10 h-72 w-72 rounded-full bg-[#6f4e37]/20 blur-3xl" />
+    <div className="relative h-screen overflow-hidden bg-slate-50 text-slate-800 flex flex-col font-sans">
 
-      <div className="relative z-10 flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <div className="flex-1 flex overflow-hidden">
         <ProductGrid
           search={search}
           setSearch={setSearch}
           handleKeyDown={handleKeyDown}
-          onOpenScanner={() => setIsScannerOpen(true)}
           scanNotice={scanNotice}
           categories={categories}
           category={category}
@@ -371,7 +337,31 @@ export default function POS() {
           tax={tax}
           total={total}
           setIsCheckoutOpen={setIsCheckoutOpen}
+          customerName={customerName}
+          setCustomerName={setCustomerName}
+          customerPhone={customerPhone}
+          setCustomerPhone={setCustomerPhone}
+          handlePaymentSelect={handlePaymentSelect}
         />
+      </div>
+
+      {/* Bottom Action Bar */}
+      <div className="h-20 bg-white border-t border-slate-200 flex items-center justify-around px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20 shrink-0">
+        {[
+          {icon: '📄', label: 'New Bill (F1)', color: 'text-[#3E2723]'},
+          {icon: '🔍', label: 'Search Item (F4)'},
+          {icon: '🏷️', label: 'Apply Discount (F5)'},
+          {icon: '🗑️', label: 'Remove Item (Del)', color: 'text-red-500'},
+          {icon: '⏸️', label: 'Hold Bill (F6)', color: 'text-blue-500'},
+          {icon: '🕒', label: 'Recent Bills (F8)'},
+          {icon: '💵', label: 'Cash Drawer (F9)'},
+          {icon: '⌨️', label: 'Keyboard (F10)'}
+        ].map((item, i) => (
+          <button key={i} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-slate-50 min-w-[80px]">
+            <span className={`text-xl mb-1 ${item.color || 'text-slate-600'}`}>{item.icon}</span>
+            <span className="text-[11px] font-semibold text-slate-700 whitespace-nowrap">{item.label}</span>
+          </button>
+        ))}
       </div>
 
       <CheckoutOverlay
@@ -388,12 +378,6 @@ export default function POS() {
         handlePaymentSelect={handlePaymentSelect}
         receiptData={receiptData}
         closeAndClear={closeAndClear}
-      />
-
-      <BarcodeScannerModal
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onDetected={handleCameraScan}
       />
     </div>
   );
