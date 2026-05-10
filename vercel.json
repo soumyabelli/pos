@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://independent-perception-production-1caf.up.railway.app/api/$1"
+      "destination": "https://pos-production-e828.up.railway.app/api/$1"
     },
     {
       "source": "/(.*)",
