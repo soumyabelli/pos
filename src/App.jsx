@@ -6,6 +6,10 @@ import POS from "./pages/POS";
 // Legacy standalone page (kept for compatibility)
 import ProductManagement from "./pages/ProductManagement";
 
+// Manager Routes
+import ManagerLayout from "./manager/components/ManagerLayout";
+import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
+
 import AdminLayout from "./admin/components/AdminLayout";
 import DashboardPage from "./admin/pages/DashboardPage";
 import ProductsPage from "./admin/pages/ProductsPage";
@@ -39,10 +43,19 @@ function App() {
           path="/manager"
           element={
             <ProtectedRoute allowedRoles={["admin", "manager"]}>
-              <ManagerDashboard />
+              <ManagerLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<ManagerDashboardPage />} />
+          <Route path="employees" element={<div className="p-8">Employee Management Module (Building...)</div>} />
+          <Route path="inventory" element={<div className="p-8">Inventory Module (Building...)</div>} />
+          <Route path="billing" element={<div className="p-8">Billing & Approvals Module (Building...)</div>} />
+          <Route path="shifts" element={<div className="p-8">Shift Tracking Module (Building...)</div>} />
+          <Route path="reports" element={<div className="p-8">Reports Module (Building...)</div>} />
+          <Route path="settings" element={<div className="p-8">Settings Module (Building...)</div>} />
+        </Route>
         
         <Route
           path="/pos"

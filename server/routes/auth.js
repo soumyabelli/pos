@@ -64,6 +64,19 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// ✅ Get Employee List for Dropdown Login
+router.get('/employees', async (req, res) => {
+  try {
+    const employees = await User.find({ 
+      role: { $in: ['user', 'worker'] }, 
+      isActive: true 
+    }).select('name username employeeId subRole shift store');
+    res.json(employees);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ✅ Login
 router.post('/login', async (req, res) => {
   try {

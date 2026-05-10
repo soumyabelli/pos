@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
+    employeeId: {
+      type: String,
+      unique: true,
+      sparse: true // allows nulls if old admin accounts don't have it
+    },
     name: {
       type: String,
       required: [true, 'Please provide a name'],
@@ -23,6 +28,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
     },
+    mobile: {
+      type: String,
+      default: ''
+    },
+    address: {
+      type: String,
+      default: ''
+    },
     password: {
       type: String,
       required: [true, 'Please provide a password'],
@@ -33,6 +46,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['admin', 'manager', 'user', 'worker'],
       default: 'user'
+    },
+    subRole: {
+      type: String, // E.g., 'Cashier', 'Billing Staff', 'Inventory Staff', 'Service Staff', 'Support Staff'
+      default: 'Cashier'
+    },
+    shift: {
+      type: String,
+      enum: ['Morning', 'Evening', 'Night', 'Flexible'],
+      default: 'Flexible'
     },
     store: {
       type: String,
@@ -47,10 +69,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
+// Auto-generate employee ID before saving if it's a regular user and doesn't have one
 userSchema.pre('save', async function() {
   if (this.isModified('username') && this.username) {
     this.username = this.username.toLowerCase().trim();
+  }
+
+  if (this.isNew && (this.role === 'user' || this.role === 'worker') && !this.employeeId) {
+    this.employeeId = 'EMP-' + Math.floor(1000 + Math.random() * 9000); // Ex: EMP-4821
   }
 
   if (!this.isModified('password')) return;
