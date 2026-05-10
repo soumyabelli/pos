@@ -3,6 +3,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { createServer } from 'node:http';
+import { Server } from 'socket.io';
+import { createClient } from 'redis';
 import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
 import orderRoutes from './routes/orders.js';
@@ -10,30 +13,127 @@ import productRoutes from './routes/products.js';
 import settingRoutes from './routes/settings.js';
 import taskRoutes from './routes/tasks.js';
 import userRoutes from './routes/users.js';
+import analyticsRoutes from './routes/analytics.js';
+import storesRoutes from './routes/stores.js';
 import Category from './models/Category.js';
 import Product from './models/Product.js';
 import Setting from './models/Setting.js';
 import User from './models/User.js';
+import { cacheMiddleware } from './middleware/cache.js';
+
+console.log("🚀 SERVER.JS IS RUNNING");
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
+// Redis Setup — fully optional, server runs fine without it
+let redisConnected = false;
+const redisConfig = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : process.env.REDIS_HOST
+    ? { socket: { host: process.env.REDIS_HOST, port: Number(process.env.REDIS_PORT) || 6379 } }
+    : null;
+
+const redisClient = createClient(redisConfig || { socket: { host: '127.0.0.1', port: 6379 } });
+
+redisClient.on('error', () => {
+  // Suppress repeated error spam — just mark as not connected
+  if (redisConnected) {
+    redisConnected = false;
+    console.warn('⚠️  Redis disconnected — running without cache.');
+  }
+});
+
+if (redisConfig) {
+  try {
+    await Promise.race([
+      redisClient.connect(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connect timeout')), 3000))
+    ]);
+    redisConnected = true;
+    console.log('✅ Redis connected');
+  } catch {
+    console.warn('⚠️  Redis unavailable — caching disabled, server continues.');
+  }
+} else {
+  console.log('ℹ️ Redis not configured — caching disabled.');
+}
+
+export { redisClient, redisConnected };
+
+// Socket.IO Setup
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  }
+});
+
+export { io };
+
+// Provide fallback defaults for Railway if environment variables are not set in the dashboard
+const fallbackEnvVars = {
+  MONGO_URI: "mongodb://POS:POS123@ac-ozbnhe6-shard-00-00.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-01.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-02.cfthzqf.mongodb.net:27017/pos?ssl=true&replicaSet=atlas-pualpn-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster1",
+  JWT_SECRET: "your_super_secret_jwt_key_change_this_in_production_12345"
+};
+
+const missingEnvVars = ['MONGO_URI', 'JWT_SECRET'].filter((key) => !process.env[key]);
+if (missingEnvVars.length > 0) {
+  console.warn(`⚠️ Missing environment variables: ${missingEnvVars.join(', ')}. Using fallbacks.`);
+  missingEnvVars.forEach(key => process.env[key] = fallbackEnvVars[key]);
+}
+
+const rawAllowedOrigins = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = rawAllowedOrigins
+  .split(',')
+  .map((origin) => origin.trim().replaceAll(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
+  .filter(Boolean);
+
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+  if (allowedOrigins.includes(normalizedOrigin)) return true;
+
+  // Allow Vercel preview/production frontend domains.
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(normalizedOrigin)) return true;
+
+  return false;
+}
+
 app.use(helmet());
-app.use(
-  cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
-    credentials: true
-  })
-);
+const corsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
+try {
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log('MongoDB connected');
+} catch (err) {
+  console.error('MongoDB connection error:', err);
+}
+// (duplicate mongoose.connect removed — already called above with await)
 
 async function ensureDefaultUsers() {
   const defaultUsers = [
@@ -56,25 +156,28 @@ async function ensureDefaultUsers() {
       username: 'user',
       email: 'user@urbancrust.com',
       password: 'user',
-      role: 'worker'
+      role: 'user'
     }
   ];
 
   for (const seedUser of defaultUsers) {
-    const existingUser = await User.findOne({ username: seedUser.username }).select('+password');
+    let user = await User.findOne({
+      $or: [{ username: seedUser.username.toLowerCase() }, { email: seedUser.email.toLowerCase() }]
+    }).select('+password');
 
-    if (!existingUser) {
+    if (!user) {
       await User.create({ ...seedUser, store: 'Main Store' });
       continue;
     }
 
-    existingUser.name = seedUser.name;
-    existingUser.email = seedUser.email;
-    existingUser.role = seedUser.role;
-    existingUser.store = 'Main Store';
-    existingUser.isActive = true;
-    existingUser.password = seedUser.password;
-    await existingUser.save();
+    user.name = seedUser.name;
+    user.username = seedUser.username;
+    user.email = seedUser.email;
+    user.role = seedUser.role;
+    user.store = 'Main Store';
+    user.isActive = true;
+    user.password = seedUser.password;
+    await user.save();
   }
 }
 
@@ -195,18 +298,27 @@ mongoose.connection.once('open', async () => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/categories', cacheMiddleware(600), categoryRoutes);
+app.use('/api/products', cacheMiddleware(600), productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/stores', storesRoutes);
 
 app.get('/', (req, res) => {
   res.json({
     message: 'Urban Crust POS Backend API',
     version: '1.1.0',
     status: 'running'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    mongoState: mongoose.connection.readyState
   });
 });
 
@@ -217,6 +329,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Socket.IO Connection Handler
+io.on('connection', (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+  
+  socket.on('subscribe_inventory', () => {
+    socket.join('inventory_channel');
+  });
+  
+  socket.on('subscribe_orders', () => {
+    socket.join('orders_channel');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log(`❌ User disconnected: ${socket.id}`);
+  });
+});
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`${redisConnected ? '✅' : '⚠️ '} Redis: ${redisConnected ? 'connected' : 'disabled (no Redis available)'}`);
+  console.log(`✅ Socket.IO enabled`);
 });

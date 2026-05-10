@@ -63,22 +63,22 @@ export default function TopNavbar({ onOpenSidebar, isCoolTheme = false, toggleTh
 
           <label className="relative w-full max-w-2xl">
             <Search
-              size={16}
-              className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}
+              size={18}
+              className={`pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}
             />
             <input
               type="search"
               placeholder="Search products, orders, users..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              className={`h-11 w-full rounded-xl border bg-white pl-9 pr-4 text-[0.95rem] outline-none transition focus:ring-4 ${isCoolTheme ? "border-[#cfe2ff] text-[#1f3652] placeholder:text-[#5e7fa6] focus:border-[#5b9dff] focus:ring-[#5b9dff]/15" : "border-[#e7d5c3] text-[#3E2723] placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-[#D4853D]/15"}`}
+              className={`h-11 w-full rounded-xl border bg-white pl-11 pr-4 text-[0.95rem] outline-none transition focus:ring-4 ${isCoolTheme ? "border-[#cfe2ff] text-[#1f3652] placeholder:text-[#5e7fa6] focus:border-[#5b9dff] focus:ring-[#5b9dff]/15" : "border-[#e7d5c3] text-[#3E2723] placeholder:text-[#8B6F47] focus:border-[#D4853D] focus:ring-[#D4853D]/15"}`}
             />
           </label>
         </div>
 
-        <div className="hidden min-w-[180px] text-right xl:block">
-          <p className={`text-sm font-semibold ${isCoolTheme ? "text-[#1f3652]" : "text-[#3E2723]"}`}>{activePage}</p>
-          <p className={`text-xs ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}>Omnichannel Operations</p>
+        <div className="hidden min-w-[180px] shrink-0 text-right xl:block">
+          <p className={`truncate text-sm font-semibold ${isCoolTheme ? "text-[#1f3652]" : "text-[#3E2723]"}`}>{activePage}</p>
+          <p className={`truncate text-xs ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}>Omnichannel Operations</p>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">

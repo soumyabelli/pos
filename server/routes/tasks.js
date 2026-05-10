@@ -15,8 +15,8 @@ router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (assignedUser.role !== 'worker') {
-      return res.status(400).json({ error: 'Tasks can only be assigned to workers' });
+    if (!['worker', 'user'].includes(assignedUser.role)) {
+      return res.status(400).json({ error: 'Tasks can only be assigned to users/workers' });
     }
 
     const task = new Task({
@@ -42,7 +42,7 @@ router.post('/', authMiddleware, managerOrAdmin, async (req, res) => {
 // Get tasks (Admin/Manager all, Worker own only)
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const filter = req.user.role === 'worker' ? { assignedTo: req.user.id } : {};
+    const filter = ['worker', 'user'].includes(req.user.role) ? { assignedTo: req.user.id } : {};
 
     const tasks = await Task.find(filter)
       .populate('assignedTo', 'name email role')
@@ -58,7 +58,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // Get task statistics
 router.get('/stats/summary', authMiddleware, async (req, res) => {
   try {
-    const filter = req.user.role === 'worker' ? { assignedTo: req.user.id } : {};
+    const filter = ['worker', 'user'].includes(req.user.role) ? { assignedTo: req.user.id } : {};
 
     const stats = await Task.aggregate([
       { $match: filter },
@@ -103,7 +103,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    if (req.user.role === 'worker' && task.assignedTo._id.toString() !== req.user.id) {
+    if (['worker', 'user'].includes(req.user.role) && task.assignedTo._id.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
@@ -127,7 +127,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    if (req.user.role === 'worker' && task.assignedTo.toString() !== req.user.id) {
+    if (['worker', 'user'].includes(req.user.role) && task.assignedTo.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Not authorized' });
     }
 

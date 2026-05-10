@@ -1,0 +1,183 @@
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { AlertTriangle, Plus, ReceiptText, ShieldAlert, Users } from "lucide-react";
+import { API_BASE_URL } from "../../config/api";
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function safeNumber(value, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+export default function ManagerDashboardPage() {
+  const [daily, setDaily] = useState({ totalOrders: 0, totalRevenue: 0, totalItems: 0 });
+  const [orders, setOrders] = useState([]);
+  const [employeesCount, setEmployeesCount] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  const headers = useMemo(() => getAuthHeaders(), []);
+
+  const loadDashboard = async () => {
+    try {
+      const [dailyRes, ordersRes, usersRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/orders/stats/daily`, { headers }),
+        axios.get(`${API_BASE_URL}/api/orders`, { headers }),
+        axios.get(`${API_BASE_URL}/api/users`, { headers }),
+      ]);
+
+      setDaily(dailyRes.data || { totalOrders: 0, totalRevenue: 0, totalItems: 0 });
+      setOrders(Array.isArray(ordersRes.data) ? ordersRes.data.slice(0, 10) : []);
+      const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+      setEmployeesCount(users.filter((user) => String(user.role || "").toLowerCase() !== "admin").length);
+    } catch (error) {
+      // Keep UI stable if API fails.
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const addRandomBillings = async () => {
+    setBusy(true);
+    try {
+      const productsRes = await axios.get(`${API_BASE_URL}/api/products/admin/all`, { headers });
+      const products = Array.isArray(productsRes.data) ? productsRes.data : [];
+      const sellable = products.filter((product) => product?.isActive !== false && safeNumber(product?.stock) > 0);
+
+      if (sellable.length === 0) {
+        alert("No active products with stock found. Add products/stock first.");
+        return;
+      }
+
+      const names = ["Aarav Gupta", "Sneha Patel", "Rohan Sharma", "Priya Singh", "Karan Verma"];
+      const paymentMethods = ["Cash", "Card", "UPI"];
+
+      for (let index = 0; index < 3; index += 1) {
+        const product = sellable[Math.floor(Math.random() * sellable.length)];
+        const price = safeNumber(product.price, 100);
+        const maxQty = Math.max(1, Math.min(3, safeNumber(product.stock, 1)));
+        const qty = 1 + Math.floor(Math.random() * maxQty);
+        const subtotal = qty * price;
+        const tax = 0;
+
+        await axios.post(
+          `${API_BASE_URL}/api/orders`,
+          {
+            customerName: names[Math.floor(Math.random() * names.length)],
+            customerPhone: `98765432${Math.floor(10 + Math.random() * 90)}${Math.floor(10 + Math.random() * 90)}`,
+            items: [
+              {
+                product: product._id,
+                sku: product.sku || "",
+                productName: product.product || product.name || "Item",
+                qty,
+                price,
+                total: subtotal,
+              },
+            ],
+            subtotal,
+            tax,
+            paymentMethod: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+            store: "Main Store",
+          },
+          { headers }
+        );
+      }
+
+      await loadDashboard();
+    } catch (error) {
+      console.error(error);
+      alert(error?.response?.data?.error || "Failed creating random billings.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <section className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-3xl font-black text-[#3E2723]">Branch Overview</h1>
+          <p className="mt-1 text-sm text-[#8B6F47]">Monitor today's active shift and staff performance.</p>
+        </div>
+        <button
+          type="button"
+          onClick={addRandomBillings}
+          disabled={busy}
+          className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#D4853D] to-[#6F4E37] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#6f4e37]/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <Plus size={16} />
+          {busy ? "Adding..." : "Add Random Billings"}
+        </button>
+      </section>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[ 
+          { label: "Today's Sales", value: `Rs ${safeNumber(daily.totalRevenue).toFixed(2)}`, icon: ReceiptText, color: "text-emerald-600", bg: "bg-emerald-100" },
+          { label: "Active Employees", value: employeesCount, icon: Users, color: "text-blue-600", bg: "bg-blue-100" },
+          { label: "Pending Approvals", value: 0, icon: ShieldAlert, color: "text-amber-600", bg: "bg-amber-100" },
+          { label: "Low Stock Alerts", value: 0, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-100" },
+        ].map((stat) => (
+          <div key={stat.label} className="flex items-center gap-4 rounded-2xl border border-[#e7d5c3] bg-white p-5 shadow-sm">
+            <div className={`grid h-12 w-12 shrink-0 place-content-center rounded-xl ${stat.bg} ${stat.color}`}>
+              <stat.icon size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#8B6F47]">{stat.label}</p>
+              <p className="mt-1 text-2xl font-bold text-[#3E2723]">{stat.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="col-span-3 rounded-2xl border border-[#e7d5c3] bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-bold text-[#3E2723]">Recent Transactions</h2>
+          <div className="mt-4 overflow-hidden rounded-xl border border-slate-100">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[#f8eee3] text-xs uppercase tracking-wider text-[#8B6F47]">
+                <tr>
+                  <th className="p-3 font-semibold">Order</th>
+                  <th className="p-3 font-semibold">Customer</th>
+                  <th className="p-3 font-semibold">Phone</th>
+                  <th className="p-3 font-semibold">Amount</th>
+                  <th className="p-3 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e7d5c3]">
+                {orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-4 text-center text-slate-500">
+                      No transactions found.
+                    </td>
+                  </tr>
+                ) : (
+                  orders.map((order) => (
+                    <tr key={order._id} className="transition hover:bg-[#fff9f2]">
+                      <td className="p-3 font-medium whitespace-nowrap">{order.orderId || order._id?.slice(-6)}</td>
+                      <td className="p-3 whitespace-nowrap">{order.customerName}</td>
+                      <td className="p-3 whitespace-nowrap">{order.customerPhone}</td>
+                      <td className="p-3 font-semibold whitespace-nowrap text-[#3E2723]">Rs {safeNumber(order.totalAmount).toFixed(2)}</td>
+                      <td className="p-3 whitespace-nowrap">
+                        <span className="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-800">
+                          {order.status || "Completed"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

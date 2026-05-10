@@ -49,13 +49,13 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, isCoolTheme = fal
       <aside className={`relative z-20 hidden h-full w-72 shrink-0 border-r p-4 shadow-[8px_0_30px_rgba(92,61,34,0.08)] lg:flex ${borderColor} ${sidebarBg}`}>
         <div className="flex h-full w-full flex-col">
           <div className={`mb-4 flex items-center rounded-2xl border bg-white px-3 py-3 shadow-sm ${borderColor}`}>
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-content-center rounded-xl bg-gradient-to-br from-[#D4853D] to-[#6F4E37] text-white">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="grid shrink-0 h-10 w-10 place-content-center rounded-xl bg-gradient-to-br from-[#D4853D] to-[#6F4E37] text-white">
                 ☕
               </div>
-              <div>
-                <p className={`text-[1.2rem] leading-5 font-semibold tracking-tight ${textStrong}`}>Urban Crust</p>
-                <p className={`mt-0.5 text-xs ${textMuted}`}>Management System</p>
+              <div className="min-w-0 flex-1">
+                <p className={`truncate text-[1.2rem] leading-5 font-semibold tracking-tight ${textStrong}`}>Urban Crust</p>
+                <p className={`mt-0.5 truncate text-xs ${textMuted}`}>Management System</p>
               </div>
             </div>
           </div>
@@ -102,8 +102,8 @@ export default function Sidebar({ isMobileOpen, onCloseMobile, isCoolTheme = fal
                         }
                       >
                       <Icon size={17} className="shrink-0" />
-                      <span className="ml-3 tracking-[0.01em]">{item.label}</span>
-                      {!item.critical && <ChevronRight size={14} className="ml-auto opacity-40 transition group-hover:opacity-100" />}
+                      <span className="ml-3 truncate tracking-[0.01em]">{item.label}</span>
+                      {!item.critical && <ChevronRight size={14} className="ml-auto shrink-0 opacity-40 transition group-hover:opacity-100" />}
                     </NavLink>
                   </li>
                 );

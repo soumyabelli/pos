@@ -1,16 +1,18 @@
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export default function Register() {
   const [form, setForm] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
-    role: "cashier"
+    role: "user"
   });
 
   const handleRegister = async () => {
-    await axios.post("http://localhost:5000/api/auth/register", form);
+    await axios.post(`${API_BASE_URL}/api/auth/register`, form);
     alert("Registered Successfully");
   };
 
@@ -32,6 +34,12 @@ export default function Register() {
         />
 
         <input
+          className="border p-2 w-full mb-3"
+          placeholder="Username"
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+        />
+
+        <input
           type="password"
           className="border p-2 w-full mb-3"
           placeholder="Password"
@@ -44,7 +52,7 @@ export default function Register() {
         >
           <option value="admin">Admin</option>
           <option value="manager">Manager</option>
-          <option value="cashier">Cashier</option>
+          <option value="user">User</option>
         </select>
 
         <button
@@ -57,3 +65,5 @@ export default function Register() {
     </div>
   );
 }
+
+

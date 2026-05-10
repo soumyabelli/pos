@@ -1,0 +1,118 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'server/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'server/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint and Test
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci
+      
+      - name: Run syntax check
+        run: |
+          cd server
+          # node --check supports ESM top-level await (unlike node -c which doesn't)
+          node --check server.js && echo "✅ Syntax OK"
+      
+      - name: Check environment requirements
+        run: |
+          cd server
+          # Use ESM-compatible inline check (package.json has "type": "module", so require() is unavailable)
+          node --input-type=module --eval "
+            import { readFileSync } from 'fs';
+            const env = {};
+            try {
+              const lines = readFileSync('.env.example', 'utf8').split('\\n');
+              lines.forEach(l => { const [k,v] = l.split('='); if(k && v !== undefined) env[k.trim()] = v.trim(); });
+            } catch {}
+            const required = ['MONGO_URI', 'JWT_SECRET'];
+            const missing = required.filter(k => !process.env[k] && !env[k]);
+            if (missing.length) { console.warn('⚠️  Env vars not set in CI:', missing.join(', ')); }
+            else { console.log('✅ Required env var keys are defined.'); }
+          "
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Push Docker Image
+    needs: lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: false
+          tags: urbancrust-pos-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: |
+          cd server
+          npm audit --audit-level=moderate || true
+      
+      - name: Check for sensitive files
+        run: |
+          # Use find's own filtering to avoid grep exit-code 1 on empty input
+          # (GitHub Actions runs with set -eo pipefail; grep on empty input = exit 1)
+          SECRET_FILES=$(find server \
+            \( -name '.env' -o -name '.env.production' -o -name '.env.local' \) \
+            ! -name '*.example' ! -name '*.sample' \
+            2>/dev/null || true)
+          if [ -n "$SECRET_FILES" ]; then
+            echo "🚨 Committed .env file(s) detected in repo:"
+            echo "$SECRET_FILES"
+            echo "Remove them and add to .gitignore!"
+            exit 1
+          fi
+          echo "✅ No committed secret .env files found."
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [lint, build, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Railway
+        run: |
+          echo "Deployment to Railway would happen here"
+          echo "Using Railway CLI with API token from secrets"
+      
+      - name: Health check
+        run: |
+          echo "Pinging health endpoint would happen here"

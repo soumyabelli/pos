@@ -8,7 +8,7 @@ import {
 import { AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/api';
 
 const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#f43f5e', '#8b5cf6'];
 
@@ -515,3 +515,5 @@ export default function ManagerDashboard() {
     </div>
   );
 }
+
+

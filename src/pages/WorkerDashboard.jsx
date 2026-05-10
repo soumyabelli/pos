@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Check, AlertCircle, CheckCircle2, LogOut } from 'lucide-react';
 
-const API_BASE = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/api';
 
 export default function WorkerDashboard() {
   const [tasks, setTasks] = useState([]);
@@ -26,7 +26,7 @@ export default function WorkerDashboard() {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/tasks`, {
+      const res = await axios.get(`${API_BASE_URL}/api/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(res.data);
@@ -37,7 +37,7 @@ export default function WorkerDashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/tasks/stats/summary`, {
+      const res = await axios.get(`${API_BASE_URL}/api/tasks/stats/summary`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);
@@ -48,7 +48,7 @@ export default function WorkerDashboard() {
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      await axios.patch(`${API_BASE}/tasks/${taskId}/status`, 
+      await axios.patch(`${API_BASE_URL}/api/tasks/${taskId}/status`, 
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -210,3 +210,5 @@ export default function WorkerDashboard() {
     </div>
   );
 }
+
+

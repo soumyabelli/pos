@@ -6,7 +6,7 @@ import ProductGrid from "../components/pos/ProductGrid";
 import CartSidebar from "../components/pos/CartSidebar";
 import CheckoutOverlay from "../components/pos/CheckoutOverlay";
 
-const API_BASE = "http://localhost:5000/api";
+import { API_BASE_URL } from "../config/api";
 const DEFAULT_TAX_RATE = 0.08;
 
 function toNumber(value, fallback = 0) {
@@ -14,7 +14,7 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(next) ? next : fallback;
 }
 
-export default function POS() {
+export default function Pos() {
   const [inventory, setInventory] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -34,7 +34,7 @@ export default function POS() {
   const scanNoticeTimerRef = useRef(null);
 
   const buildWhatsAppPhone = (rawPhone) => {
-    const digits = String(rawPhone || "").replace(/\D/g, "");
+    const digits = String(rawPhone || "").replaceAll(/\D/g, "");
     if (!digits) return "";
 
     if (digits.length === 11 && digits.startsWith("0")) {
@@ -65,10 +65,13 @@ export default function POS() {
           .join(" · ")
       : "Your order";
 
+    const extraItemsSuffix = items.length > 4 ? ` +${items.length - 4} more` : "";
+
     const offerCode = `UCRUST${String(Date.now()).slice(-6)}`;
-    const message = `Hi ${customerName}!\n\n` +
+    const message =
+      `Hi ${customerName}!\n\n` +
       `Your order ${orderReference} at Urban Crust has been confirmed.\n` +
-      `${itemSummary}${items.length > 4 ? ` +${items.length - 4} more` : ""}\n\n` +
+      `${itemSummary}${extraItemsSuffix}\n\n` +
       `Total paid: ₹${amount.toFixed(0)}.\n\n` +
       `We loved serving you today — come back soon!\n` +
       `Show this message next time and use code ${offerCode} for 12% off on your next order.\n\n` +
@@ -79,7 +82,7 @@ export default function POS() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/products`);
+      const res = await axios.get(`${API_BASE_URL}/api/products`);
       setInventory(Array.isArray(res.data) ? res.data : []);
       setInventoryError("");
     } catch (error) {
@@ -94,7 +97,7 @@ export default function POS() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await axios.get(`${API_BASE}/settings`, {
+      const res = await axios.get(`${API_BASE_URL}/api/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const nextTaxRate = toNumber(res.data?.taxRate, 8.5) / 100;
@@ -289,7 +292,7 @@ export default function POS() {
     };
 
     try {
-      const res = await axios.post(`${API_BASE}/orders`, payload, {
+      const res = await axios.post(`${API_BASE_URL}/api/orders`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -414,3 +417,5 @@ export default function POS() {
     </div>
   );
 }
+
+

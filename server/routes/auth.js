@@ -5,6 +5,13 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+function normalizeRole(inputRole) {
+  const role = String(inputRole || 'user').toLowerCase();
+  if (role === 'admin') return 'admin';
+  if (role === 'manager') return 'manager';
+  return 'user';
+}
+
 // ✅ Register
 router.post('/register', async (req, res) => {
   try {
@@ -28,7 +35,7 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password,
-      role: role || 'worker',
+      role: normalizeRole(role),
       store: store || 'Main Store'
     });
 
@@ -52,6 +59,19 @@ router.post('/register', async (req, res) => {
         role: user.role
       }
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ✅ Get Employee List for Dropdown Login
+router.get('/employees', async (req, res) => {
+  try {
+    const employees = await User.find({ 
+      role: { $in: ['user', 'worker'] }, 
+      isActive: true 
+    }).select('name username employeeId subRole shift store');
+    res.json(employees);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
