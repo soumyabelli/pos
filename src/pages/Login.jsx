@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, Shield, BriefcaseBusiness } from "lucide-react";
+import { UserCircle, Shield } from "lucide-react";
 import "../index.css";
 
 import { API_BASE_URL } from "../config/api";

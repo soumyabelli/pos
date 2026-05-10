@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import ManagerDashboard from "./pages/ManagerDashboard";
 import POS from "./pages/POS";
 
 // Legacy standalone page (kept for compatibility)
