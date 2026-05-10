@@ -108,6 +108,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
 try {
   await mongoose.connect(process.env.MONGO_URI);
