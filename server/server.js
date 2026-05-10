@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -31,11 +31,13 @@ const PORT = process.env.PORT || 5000;
 
 // Redis Setup — fully optional, server runs fine without it
 let redisConnected = false;
-const redisClient = createClient(
-  process.env.REDIS_URL
-    ? { url: process.env.REDIS_URL }
-    : { socket: { host: process.env.REDIS_HOST || '127.0.0.1', port: Number(process.env.REDIS_PORT) || 6379 } }
-);
+const redisConfig = process.env.REDIS_URL
+  ? { url: process.env.REDIS_URL }
+  : process.env.REDIS_HOST
+    ? { socket: { host: process.env.REDIS_HOST, port: Number(process.env.REDIS_PORT) || 6379 } }
+    : null;
+
+const redisClient = createClient(redisConfig || { socket: { host: '127.0.0.1', port: 6379 } });
 
 redisClient.on('error', () => {
   // Suppress repeated error spam — just mark as not connected
@@ -45,12 +47,19 @@ redisClient.on('error', () => {
   }
 });
 
-try {
-  await redisClient.connect();
-  redisConnected = true;
-  console.log('✅ Redis connected');
-} catch {
-  console.warn('⚠️  Redis unavailable — caching disabled, server continues.');
+if (redisConfig) {
+  try {
+    await Promise.race([
+      redisClient.connect(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connect timeout')), 3000))
+    ]);
+    redisConnected = true;
+    console.log('✅ Redis connected');
+  } catch {
+    console.warn('⚠️  Redis unavailable — caching disabled, server continues.');
+  }
+} else {
+  console.log('ℹ️ Redis not configured — caching disabled.');
 }
 
 export { redisClient, redisConnected };
