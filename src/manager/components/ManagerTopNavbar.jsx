@@ -24,21 +24,21 @@ export default function ManagerTopNavbar({ onOpenSidebar }) {
           <button
             type="button"
             onClick={onOpenSidebar}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[#e7d5c3] bg-white text-[#6F4E37] hover:bg-[#f8eee3] lg:hidden"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#e7d5c3] bg-white text-[#6F4E37] hover:bg-[#f8eee3] lg:hidden"
           >
             <Menu size={18} />
           </button>
 
-          <label className="relative w-full max-w-xl">
-            <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
+          <div className="relative w-full max-w-md ml-2">
+            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
             <input
               type="search"
               placeholder="Search staff, bills, or items..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-11 w-full rounded-xl border border-[#e7d5c3] bg-white pl-11 pr-4 text-[0.95rem] text-[#3E2723] placeholder:text-[#8B6F47] outline-none transition focus:border-[#D4853D] focus:ring-4 focus:ring-[#D4853D]/15"
+              className="h-10 w-full rounded-full border border-[#D9C4B3] bg-[#fffaf4] pl-10 pr-4 text-sm text-[#3E2723] placeholder:text-[#8B6F47] outline-none transition focus:border-[#D4853D] focus:bg-white focus:ring-2 focus:ring-[#D4853D]/20 shadow-inner"
             />
-          </label>
+          </div>
         </div>
 
         <div className="hidden min-w-[180px] shrink-0 text-right xl:block">

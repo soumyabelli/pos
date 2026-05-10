@@ -8,6 +8,7 @@ import ProductManagement from "./pages/ProductManagement";
 // Manager Routes
 import ManagerLayout from "./manager/components/ManagerLayout";
 import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
+import ManagerEmployeesPage from "./manager/pages/ManagerEmployeesPage";
 import ManagerPlaceholder from "./manager/pages/ManagerPlaceholder";
 import { Users, Package, FileText, Clock, FileBarChart, Settings } from "lucide-react";
 
@@ -50,7 +51,7 @@ function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<ManagerDashboardPage />} />
-          <Route path="employees" element={<ManagerPlaceholder title="Employee Management" description="Manage branch staff and schedules." icon={Users} />} />
+          <Route path="employees" element={<ManagerEmployeesPage />} />
           <Route path="inventory" element={<ManagerPlaceholder title="Inventory" description="Track and request branch inventory." icon={Package} />} />
           <Route path="billing" element={<ManagerPlaceholder title="Billing & Approvals" description="Review and approve billing requests." icon={FileText} />} />
           <Route path="shifts" element={<ManagerPlaceholder title="Shift Tracking" description="Monitor active shifts and hours." icon={Clock} />} />
