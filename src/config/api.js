@@ -10,8 +10,17 @@ function resolveFallbackBaseUrl() {
   return "";
 }
 
+function shouldForceVercelProxy() {
+  if (import.meta.env.DEV || typeof window === "undefined") return false;
+  return /\.vercel\.app$/i.test(window.location.hostname);
+}
+
 const fallbackUrl = resolveFallbackBaseUrl();
-export const API_BASE_URL = (configuredBaseUrl || fallbackUrl).replace(/\/+$/, "");
+const resolvedBaseUrl = shouldForceVercelProxy()
+  ? ""
+  : (configuredBaseUrl || fallbackUrl);
+
+export const API_BASE_URL = resolvedBaseUrl.replace(/\/+$/, "");
 
 if (!configuredBaseUrl) {
   console.warn(`VITE_API_BASE_URL not set - using fallback ${fallbackUrl}.`);
