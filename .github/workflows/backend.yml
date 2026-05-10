@@ -33,14 +33,8 @@ jobs:
       - name: Run syntax check
         run: |
           cd server
-          # node -c does not support top-level await in ESM; use --check via stdin instead
-          node --input-type=module --eval "$(cat server.js)" 2>&1 | grep -v 'Cannot find module' | grep -v 'ERR_MODULE_NOT_FOUND' || true
-          # Lightweight: just verify the file parses without import resolution errors
-          node --experimental-vm-modules -e "
-            import { readFileSync } from 'fs';
-            const src = readFileSync('./server.js', 'utf8');
-            new Function(src);
-          " 2>&1 | head -5 || true
+          # node --check supports ESM top-level await (unlike node -c which doesn't)
+          node --check server.js && echo "✅ Syntax OK"
       
       - name: Check environment requirements
         run: |
@@ -92,9 +86,12 @@ jobs:
       
       - name: Check for sensitive files
         run: |
-          # Fail if a real .env file (not .example) with actual secret VALUES is committed
-          # Only flag files that are NOT .env.example and NOT .env.sample
-          SECRET_FILES=$(find server -name '.env' -o -name '.env.production' -o -name '.env.local' 2>/dev/null | grep -v '.example' | grep -v '.sample')
+          # Use find's own filtering to avoid grep exit-code 1 on empty input
+          # (GitHub Actions runs with set -eo pipefail; grep on empty input = exit 1)
+          SECRET_FILES=$(find server \
+            \( -name '.env' -o -name '.env.production' -o -name '.env.local' \) \
+            ! -name '*.example' ! -name '*.sample' \
+            2>/dev/null || true)
           if [ -n "$SECRET_FILES" ]; then
             echo "🚨 Committed .env file(s) detected in repo:"
             echo "$SECRET_FILES"
