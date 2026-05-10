@@ -15,7 +15,7 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(next) ? next : fallback;
 }
 
-export default function POS() {
+export default function Pos() {
   const [inventory, setInventory] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -35,7 +35,7 @@ export default function POS() {
   const scanNoticeTimerRef = useRef(null);
 
   const buildWhatsAppPhone = (rawPhone) => {
-    const digits = String(rawPhone || "").replace(/\D/g, "");
+    const digits = String(rawPhone || "").replaceAll(/\D/g, "");
     if (!digits) return "";
 
     if (digits.length === 11 && digits.startsWith("0")) {
@@ -66,10 +66,13 @@ export default function POS() {
           .join(" · ")
       : "Your order";
 
+    const extraItemsSuffix = items.length > 4 ? ` +${items.length - 4} more` : "";
+
     const offerCode = `UCRUST${String(Date.now()).slice(-6)}`;
-    const message = `Hi ${customerName}!\n\n` +
+    const message =
+      `Hi ${customerName}!\n\n` +
       `Your order ${orderReference} at Urban Crust has been confirmed.\n` +
-      `${itemSummary}${items.length > 4 ? ` +${items.length - 4} more` : ""}\n\n` +
+      `${itemSummary}${extraItemsSuffix}\n\n` +
       `Total paid: ₹${amount.toFixed(0)}.\n\n` +
       `We loved serving you today — come back soon!\n` +
       `Show this message next time and use code ${offerCode} for 12% off on your next order.\n\n` +

@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import POS from "./pages/POS";
+import Pos from "./pages/POS";
 
 // Legacy standalone page (kept for compatibility)
 import ProductManagement from "./pages/ProductManagement";
@@ -9,8 +9,10 @@ import ProductManagement from "./pages/ProductManagement";
 import ManagerLayout from "./manager/components/ManagerLayout";
 import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
 import ManagerEmployeesPage from "./manager/pages/ManagerEmployeesPage";
+import ManagerInventoryPage from "./manager/pages/ManagerInventoryPage";
+import ManagerBillingPage from "./manager/pages/ManagerBillingPage";
 import ManagerPlaceholder from "./manager/pages/ManagerPlaceholder";
-import { Package, FileText, Clock, FileBarChart, Settings } from "lucide-react";
+import { Clock, FileBarChart, Settings } from "lucide-react";
 
 import AdminLayout from "./admin/components/AdminLayout";
 import DashboardPage from "./admin/pages/DashboardPage";
@@ -52,8 +54,8 @@ function App() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<ManagerDashboardPage />} />
           <Route path="employees" element={<ManagerEmployeesPage />} />
-          <Route path="inventory" element={<ManagerPlaceholder title="Inventory" description="Track and request branch inventory." icon={Package} />} />
-          <Route path="billing" element={<ManagerPlaceholder title="Billing & Approvals" description="Review and approve billing requests." icon={FileText} />} />
+          <Route path="inventory" element={<ManagerInventoryPage />} />
+          <Route path="billing" element={<ManagerBillingPage />} />
           <Route path="shifts" element={<ManagerPlaceholder title="Shift Tracking" description="Monitor active shifts and hours." icon={Clock} />} />
           <Route path="reports" element={<ManagerPlaceholder title="Branch Reports" description="Generate performance reports." icon={FileBarChart} />} />
           <Route path="settings" element={<ManagerPlaceholder title="Local Settings" description="Configure branch-specific options." icon={Settings} />} />
@@ -63,7 +65,7 @@ function App() {
           path="/pos"
           element={
             <ProtectedRoute allowedRoles={["admin", "manager", "user", "worker"]}>
-              <POS />
+              <Pos />
             </ProtectedRoute>
           }
         />

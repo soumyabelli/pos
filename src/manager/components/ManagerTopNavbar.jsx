@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Menu, Search, Bell } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -18,7 +19,7 @@ export default function ManagerTopNavbar({ onOpenSidebar }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#e7d5c3] bg-[#fffaf4]/95 px-4 py-3 shadow-sm backdrop-blur-md sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-[#e7d5c3] bg-[#fffaf4]/95 px-4 py-4 shadow-sm backdrop-blur-md sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
@@ -29,15 +30,25 @@ export default function ManagerTopNavbar({ onOpenSidebar }) {
             <Menu size={18} />
           </button>
 
-          <div className="relative w-full max-w-md ml-2">
-            <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
-            <input
-              type="search"
-              placeholder="Search staff, bills, or items..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-10 w-full rounded-full border border-[#D9C4B3] bg-[#fffaf4] pl-10 pr-4 text-sm text-[#3E2723] placeholder:text-[#8B6F47] outline-none transition focus:border-[#D4853D] focus:bg-white focus:ring-2 focus:ring-[#D4853D]/20 shadow-inner"
-            />
+          <div className="ml-1 flex w-full max-w-xl items-center">
+            <div className="relative flex-1">
+              <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B6F47]" />
+              <input
+                type="search"
+                placeholder="Search staff, bills, or items..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-11 w-full rounded-l-full border border-[#D9C4B3] bg-white pl-10 pr-4 text-sm text-[#3E2723] placeholder:text-[#8B6F47] outline-none transition focus:border-[#D4853D] focus:ring-2 focus:ring-[#D4853D]/20"
+              />
+            </div>
+            <button
+              type="button"
+              className="inline-flex h-11 items-center justify-center rounded-r-full border border-l-0 border-[#D9C4B3] bg-[#f8eee3] px-4 text-sm font-semibold text-[#3E2723] transition hover:bg-[#f3e3d4]"
+              aria-label="Search"
+              title="Search"
+            >
+              Search
+            </button>
           </div>
         </div>
 
