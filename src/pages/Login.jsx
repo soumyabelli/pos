@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { UserCircle, Shield } from "lucide-react";
+import { UserCircle, Shield, Coffee } from "lucide-react";
 import "../index.css";
 
 import { API_BASE_URL } from "../config/api";
 
 export default function Login() {
-  const [loginMode, setLoginMode] = useState("employee"); // 'employee' or 'admin'
+  const [loginMode, setLoginMode] = useState("employee");
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
 
@@ -18,9 +18,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loginMode === "employee") {
-      fetchEmployees();
-    }
+    if (loginMode === "employee") fetchEmployees();
   }, [loginMode]);
 
   const fetchEmployees = async () => {
@@ -38,37 +36,29 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const loginPayload = loginMode === "employee" 
-        ? { username: selectedEmployee, password }
-        : { identifier, password };
-
       if (loginMode === "employee" && !selectedEmployee) {
-        setError("Please select an employee name.");
+        setError("Please select your name.");
         setLoading(false);
         return;
       }
 
-      // Call backend login API
+      const loginPayload =
+        loginMode === "employee"
+          ? { username: selectedEmployee, password }
+          : { identifier, password };
+
       const res = await axios.post(`${API_BASE_URL}/api/auth/login`, loginPayload);
 
-      // Store token
       localStorage.setItem("token", res.data.token);
-      
-      // Store user info
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // Role-based routing
       const { role } = res.data.user;
-      if (role === "admin") {
-        navigate("/admin");
-      } else if (role === "manager") {
-        navigate("/manager");
-      } else {
-        navigate("/pos");
-      }
+      if (role === "admin") navigate("/admin");
+      else if (role === "manager") navigate("/manager");
+      else navigate("/pos");
     } catch (err) {
       if (!err.response) {
-        setError("Unable to reach server. Please check deployment/API URL.");
+        setError("Unable to reach server. Check your connection.");
       } else {
         setError(err.response?.data?.error || "Login failed. Please try again.");
       }
@@ -77,104 +67,170 @@ export default function Login() {
     }
   };
 
+  const isEmployee = loginMode === "employee";
+
   return (
     <div className="login-container">
-      <div className="login-glass-card max-w-[400px]">
-        <div className="mb-6 flex justify-center">
-          <div className="rounded-full bg-slate-100 p-1 flex">
+      <div className="login-glass-card" style={{ maxWidth: 440 }}>
+
+        {/* Brand */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "linear-gradient(135deg,#ea580c,#b45309)",
+            borderRadius: 14, padding: "10px 18px", color: "white"
+          }}>
+            <Coffee size={20} />
+            <span style={{ fontFamily: "Manrope,sans-serif", fontWeight: 800, fontSize: 15, letterSpacing: "-0.2px" }}>
+              Urban Crust
+            </span>
+          </div>
+        </div>
+
+        {/* Mode Toggle */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+          <div style={{
+            background: "#f1f3f9", borderRadius: 999, padding: 4,
+            display: "inline-flex", gap: 4
+          }}>
             <button
               type="button"
-              className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition ${loginMode === "employee" ? "bg-white text-[#d4853d] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               onClick={() => { setLoginMode("employee"); setError(""); setPassword(""); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "8px 20px", borderRadius: 999, border: "none",
+                fontWeight: 600, fontSize: 13, cursor: "pointer",
+                transition: "all 0.2s",
+                background: isEmployee ? "white" : "transparent",
+                color: isEmployee ? "#ea580c" : "#6b7280",
+                boxShadow: isEmployee ? "0 2px 8px rgba(0,0,0,0.08)" : "none"
+              }}
             >
-              <UserCircle size={16} /> Staff
+              <UserCircle size={15} /> Staff
             </button>
             <button
               type="button"
-              className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition ${loginMode === "admin" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
               onClick={() => { setLoginMode("admin"); setError(""); setPassword(""); }}
+              style={{
+                display: "flex", alignItems: "center", gap: 6,
+                padding: "8px 20px", borderRadius: 999, border: "none",
+                fontWeight: 600, fontSize: 13, cursor: "pointer",
+                transition: "all 0.2s",
+                background: !isEmployee ? "white" : "transparent",
+                color: !isEmployee ? "#4338ca" : "#6b7280",
+                boxShadow: !isEmployee ? "0 2px 8px rgba(0,0,0,0.08)" : "none"
+              }}
             >
-              <Shield size={16} /> Admin / Manager
+              <Shield size={15} /> Admin / Manager
             </button>
           </div>
         </div>
 
-        <h2 className="login-title mb-2 text-center text-2xl font-black text-slate-800">
-          {loginMode === "employee" ? "Terminal Access" : "Management Portal"}
+        {/* Title */}
+        <h2 className="login-title">
+          {isEmployee ? "Terminal Access" : (
+            <>Management <span className="text-gradient">Portal</span></>
+          )}
         </h2>
-        <p className="login-subtitle text-center mb-6">
-          {loginMode === "employee" ? "Select your name and enter pin." : "Secure access for operations."}
+        <p className="login-subtitle" style={{ marginBottom: 28 }}>
+          {isEmployee ? "Select your name and enter your PIN." : "Secure access for store operations."}
         </p>
-        
-        <form onSubmit={handleLogin} className="login-form space-y-4">
+
+        {/* Form */}
+        <form onSubmit={handleLogin} className="login-form">
           {error && (
-            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm py-2 px-3 rounded-lg text-center font-medium">
+            <div style={{
+              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+              color: "#dc2626", borderRadius: 12, padding: "10px 14px",
+              fontSize: 13, fontWeight: 500, textAlign: "center"
+            }}>
               {error}
             </div>
           )}
-          
-          {loginMode === "employee" ? (
-            <div className="relative">
+
+          {isEmployee ? (
+            <div style={{ position: "relative" }}>
               <select
-                className="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-700 outline-none transition focus:border-[#d4853d] focus:bg-white"
+                className="login-input"
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
                 required
                 disabled={loading}
               >
                 <option value="" disabled>Select your name...</option>
-                {employees.map(emp => (
+                {employees.map((emp) => (
                   <option key={emp._id} value={emp.username}>
-                    {emp.name} ({emp.subRole || 'Staff'})
+                    {emp.name} ({emp.subRole || "Staff"})
                   </option>
                 ))}
               </select>
             </div>
           ) : (
             <input
-              className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+              className="login-input"
               placeholder="Username or Email"
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
               disabled={loading}
+              autoComplete="username"
             />
           )}
 
           <input
             type="password"
-            className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
-            placeholder={loginMode === "employee" ? "Secret PIN / Password" : "Password"}
+            className="login-input"
+            placeholder={isEmployee ? "Secret PIN / Password" : "Password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
+            autoComplete="current-password"
           />
 
           <button
             type="submit"
-            className={`h-12 w-full rounded-xl font-bold text-white transition ${loginMode === "employee" ? "bg-[#d4853d] hover:bg-[#c3752c] shadow-[0_4px_14px_rgba(212,133,61,0.3)]" : "bg-blue-600 hover:bg-blue-700 shadow-[0_4px_14px_rgba(37,99,235,0.3)]"}`}
-            style={{ opacity: loading ? 0.6 : 1 }}
+            className={`btn-primary-large glow`}
+            style={{
+              background: isEmployee
+                ? "linear-gradient(120deg,#ea580c,#f97316,#fb923c)"
+                : "linear-gradient(120deg,#4338ca,#6366f1,#818cf8)",
+              boxShadow: isEmployee
+                ? "0 15px 28px rgba(234,88,12,0.3)"
+                : "0 15px 28px rgba(67,56,202,0.3)",
+              opacity: loading ? 0.7 : 1,
+              marginTop: 4
+            }}
             disabled={loading}
           >
-            {loading ? "Authenticating..." : "Login"}
+            {loading ? "Authenticating…" : "Sign In"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100">
-          <p className="text-center text-[10px] font-bold tracking-widest text-slate-400 mb-4">TEST ACCOUNTS</p>
-          <div className="flex gap-2 text-center w-full justify-center">
-             <div className="text-[10px] text-slate-500">Admin: admin/admin</div>
-             <div className="text-[10px] text-slate-500">|</div>
-             <div className="text-[10px] text-slate-500">Manager: manager/manager</div>
-             <div className="text-[10px] text-slate-500">|</div>
-             <div className="text-[10px] text-slate-500">User: user/user</div>
+        {/* Test Accounts */}
+        <div style={{
+          marginTop: 28, paddingTop: 20,
+          borderTop: "1px solid #eef0f6",
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 8
+        }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "#9ca3af", textTransform: "uppercase" }}>
+            Test Accounts
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+            {[["Admin", "admin/admin"], ["Manager", "manager/manager"], ["Staff", "user/user"]].map(([label, creds]) => (
+              <span key={label} style={{
+                background: "#f8f9fc", border: "1px solid #eceef5",
+                borderRadius: 8, padding: "4px 10px",
+                fontSize: 11, color: "#6b7280", fontWeight: 500
+              }}>
+                <strong style={{ color: "#374151" }}>{label}</strong> · {creds}
+              </span>
+            ))}
           </div>
         </div>
+
       </div>
     </div>
   );
 }
-
-

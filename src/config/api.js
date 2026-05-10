@@ -1,7 +1,10 @@
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
-export const API_BASE_URL = (configuredBaseUrl || "").replace(/\/+$/, "");
+// Fallback to Railway production URL if env var is not set
+const FALLBACK_URL = "https://independent-perception-production-1caf.up.railway.app";
 
-if (!API_BASE_URL) {
-  console.error("Missing VITE_API_BASE_URL. Set it in Vercel project environment variables.");
+export const API_BASE_URL = (configuredBaseUrl || FALLBACK_URL).replace(/\/+$/, "");
+
+if (!configuredBaseUrl) {
+  console.warn("VITE_API_BASE_URL not set — using fallback Railway URL.");
 }
