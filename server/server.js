@@ -29,20 +29,31 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
-// Redis Setup
-const redisClient = createClient({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379
+// Redis Setup — fully optional, server runs fine without it
+let redisConnected = false;
+const redisClient = createClient(
+  process.env.REDIS_URL
+    ? { url: process.env.REDIS_URL }
+    : { socket: { host: process.env.REDIS_HOST || '127.0.0.1', port: Number(process.env.REDIS_PORT) || 6379 } }
+);
+
+redisClient.on('error', () => {
+  // Suppress repeated error spam — just mark as not connected
+  if (redisConnected) {
+    redisConnected = false;
+    console.warn('⚠️  Redis disconnected — running without cache.');
+  }
 });
 
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
 try {
   await redisClient.connect();
-} catch (err) {
-  console.log('Redis connection error:', err);
+  redisConnected = true;
+  console.log('✅ Redis connected');
+} catch {
+  console.warn('⚠️  Redis unavailable — caching disabled, server continues.');
 }
 
-export { redisClient };
+export { redisClient, redisConnected };
 
 // Socket.IO Setup
 const io = new Server(httpServer, {
@@ -104,10 +115,7 @@ try {
 } catch (err) {
   console.error('MongoDB connection error:', err);
 }
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// (duplicate mongoose.connect removed — already called above with await)
 
 async function ensureDefaultUsers() {
   const defaultUsers = [
@@ -324,6 +332,6 @@ httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✅ Redis connected`);
+  console.log(`${redisConnected ? '✅' : '⚠️ '} Redis: ${redisConnected ? 'connected' : 'disabled (no Redis available)'}`);
   console.log(`✅ Socket.IO enabled`);
 });

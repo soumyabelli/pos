@@ -1,13 +1,13 @@
-import { redisClient } from '../server.js';
+import { redisClient, redisConnected } from '../server.js';
 
 /**
- * Cache Middleware - Caches GET requests for products and categories
- * Invalidates on POST/PUT/DELETE operations
+ * Cache Middleware - Caches GET requests for products and categories.
+ * Gracefully skips all caching if Redis is not available.
  */
 export const cacheMiddleware = (duration = 300) => {
   return async (req, res, next) => {
-    // Only cache GET requests
-    if (req.method !== 'GET') {
+    // Skip cache entirely if Redis is not connected
+    if (!redisConnected || req.method !== 'GET') {
       return next();
     }
 
@@ -20,33 +20,30 @@ export const cacheMiddleware = (duration = 300) => {
         return res.json(JSON.parse(cachedData));
       }
 
-      // Store original res.json
+      // Override res.json to cache the response on the way out
       const originalJson = res.json.bind(res);
-
-      // Override res.json to cache response
-      res.json = function(data) {
-        try {
-          redisClient.setEx(key, duration, JSON.stringify(data)).catch(err =>
-            console.error('Cache set error:', err)
-          );
-        } catch (err) {
-          console.error('Cache middleware error:', err);
-        }
+      res.json = function (data) {
+        redisClient
+          .setEx(key, duration, JSON.stringify(data))
+          .catch((err) => console.error('Cache set error:', err));
         return originalJson(data);
       };
 
       next();
     } catch (error) {
-      console.error('Cache middleware error:', error);
+      // Redis error mid-request — just skip cache and serve normally
+      console.warn('Cache middleware skipped:', error.message);
       next();
     }
   };
 };
 
 /**
- * Cache Invalidation - Clears cache when data is modified
+ * Cache Invalidation - Clears cache when data is modified.
+ * No-op if Redis is not connected.
  */
 export const invalidateCache = async (pattern) => {
+  if (!redisConnected) return;
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
