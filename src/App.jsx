@@ -8,6 +8,8 @@ import ProductManagement from "./pages/ProductManagement";
 // Manager Routes
 import ManagerLayout from "./manager/components/ManagerLayout";
 import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
+import ManagerPlaceholder from "./manager/pages/ManagerPlaceholder";
+import { Users, Package, FileText, Clock, FileBarChart, Settings } from "lucide-react";
 
 import AdminLayout from "./admin/components/AdminLayout";
 import DashboardPage from "./admin/pages/DashboardPage";
@@ -48,12 +50,12 @@ function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<ManagerDashboardPage />} />
-          <Route path="employees" element={<div className="p-8">Employee Management Module (Building...)</div>} />
-          <Route path="inventory" element={<div className="p-8">Inventory Module (Building...)</div>} />
-          <Route path="billing" element={<div className="p-8">Billing & Approvals Module (Building...)</div>} />
-          <Route path="shifts" element={<div className="p-8">Shift Tracking Module (Building...)</div>} />
-          <Route path="reports" element={<div className="p-8">Reports Module (Building...)</div>} />
-          <Route path="settings" element={<div className="p-8">Settings Module (Building...)</div>} />
+          <Route path="employees" element={<ManagerPlaceholder title="Employee Management" description="Manage branch staff and schedules." icon={Users} />} />
+          <Route path="inventory" element={<ManagerPlaceholder title="Inventory" description="Track and request branch inventory." icon={Package} />} />
+          <Route path="billing" element={<ManagerPlaceholder title="Billing & Approvals" description="Review and approve billing requests." icon={FileText} />} />
+          <Route path="shifts" element={<ManagerPlaceholder title="Shift Tracking" description="Monitor active shifts and hours." icon={Clock} />} />
+          <Route path="reports" element={<ManagerPlaceholder title="Branch Reports" description="Generate performance reports." icon={FileBarChart} />} />
+          <Route path="settings" element={<ManagerPlaceholder title="Local Settings" description="Configure branch-specific options." icon={Settings} />} />
         </Route>
         
         <Route
