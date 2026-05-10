@@ -149,8 +149,8 @@ export default function TopNavbar({ onOpenSidebar, isCoolTheme = false, toggleTh
               className="h-9 w-9 rounded-xl object-cover"
             />
             <div className="hidden pr-2 sm:block">
-              <p className={`text-sm font-semibold ${isCoolTheme ? "text-[#1f3652]" : "text-[#3E2723]"}`}>Admin</p>
-              <p className={`text-xs ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}>System Administrator</p>
+              <p className={`text-sm font-semibold ${isCoolTheme ? "text-[#1f3652]" : "text-[#3E2723]"}`}>Akash</p>
+              <p className={`text-xs ${isCoolTheme ? "text-[#5e7fa6]" : "text-[#8B6F47]"}`}>Admin</p>
             </div>
           </div>
         </div>

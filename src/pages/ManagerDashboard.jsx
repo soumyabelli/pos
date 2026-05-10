@@ -206,8 +206,8 @@ export default function ManagerDashboard() {
             </button>
             <div className="flex items-center gap-4 pl-6 border-l border-slate-200/60">
               <div className="hidden md:block text-right">
-                <p className="text-sm font-bold text-slate-700 leading-none">Manager</p>
-                <p className="text-xs text-slate-500 font-medium">Admin</p>
+                <p className="text-sm font-bold text-slate-700 leading-none">Soumya & Dhyan</p>
+                <p className="text-xs text-slate-500 font-medium">Manager</p>
               </div>
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#D4853D] to-[#6F4E37] flex items-center justify-center text-white shadow-lg shadow-[#D4853D]/30 ring-2 ring-white hover:scale-105 transition-transform">
                 <UserCircle size={22} />

@@ -5,6 +5,7 @@ export default function CartSidebar({
   removeFromCart,
   updateQty,
   subtotal,
+  discountAmount,
   tax,
   total,
   clearCart,
@@ -97,7 +98,7 @@ export default function CartSidebar({
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Discount</span>
-            <span className="font-semibold text-slate-800">- ₹0.00</span>
+            <span className="font-semibold text-slate-800">- ₹{(discountAmount || 0).toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Tax (GST 5%)</span>

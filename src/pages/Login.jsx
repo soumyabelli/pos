@@ -100,29 +100,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-200">
-          <p className="text-center text-xs font-bold text-slate-600 mb-4">TEST CREDENTIALS</p>
-          
-          <div className="space-y-3">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-xs font-black text-blue-900">👨‍💼 ADMIN</p>
-              <p className="text-[10px] text-blue-700">username: admin</p>
-              <p className="text-[10px] text-blue-700">password: admin</p>
-            </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-xs font-black text-green-900">📋 MANAGER</p>
-              <p className="text-[10px] text-green-700">username: manager</p>
-              <p className="text-[10px] text-green-700">password: manager</p>
-            </div>
-
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-              <p className="text-xs font-black text-orange-900">👷 USER (Store Employee)</p>
-              <p className="text-[10px] text-orange-700">username: user</p>
-              <p className="text-[10px] text-orange-700">password: user</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

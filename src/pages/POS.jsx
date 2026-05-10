@@ -22,6 +22,7 @@ export default function POS() {
   const [taxRate, setTaxRate] = useState(DEFAULT_TAX_RATE);
   const [inventoryError, setInventoryError] = useState("");
   const [loadingInventory, setLoadingInventory] = useState(true);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
@@ -186,7 +187,36 @@ export default function POS() {
   };
 
   const removeFromCart = (sku) => setCart((prev) => prev.filter((item) => item.sku !== sku));
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setDiscountAmount(0);
+  };
+
+  const handleNewBill = () => {
+    if (cart.length > 0) {
+      if (window.confirm("Are you sure you want to clear the current bill?")) {
+        clearCart();
+        setCustomerName("");
+        setCustomerPhone("");
+      }
+    }
+  };
+
+  const handleApplyDiscount = () => {
+    if (cart.length === 0) {
+      alert("Please add items to the cart first.");
+      return;
+    }
+    const discount = window.prompt("Enter flat discount amount (₹):");
+    if (discount !== null) {
+      const parsed = parseFloat(discount);
+      if (!isNaN(parsed) && parsed >= 0) {
+        setDiscountAmount(parsed);
+      } else {
+        alert("Invalid discount amount");
+      }
+    }
+  };
 
   const handleKeyDown = (event) => {
     if (event.key !== "Enter" || search.trim() === "") return;
@@ -216,8 +246,9 @@ export default function POS() {
   );
 
   const subtotal = cart.reduce((acc, item) => acc + toNumber(item.price) * item.qty, 0);
-  const tax = subtotal * taxRate;
-  const total = subtotal + tax;
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount);
+  const tax = discountedSubtotal * taxRate;
+  const total = discountedSubtotal + tax;
   const taxRatePercent = Number((taxRate * 100).toFixed(2));
 
   const handlePaymentSelect = async (method) => {
@@ -245,6 +276,7 @@ export default function POS() {
       customerPhone: normalizedPhone,
       paymentMethod: method,
       subtotal,
+      discount: discountAmount,
       tax,
       items: cart.map((item) => ({
         product: item._id,
@@ -272,6 +304,7 @@ export default function POS() {
         customerName: payload.customerName,
         customerPhone: payload.customerPhone,
         subtotal,
+        discount: discountAmount,
         tax,
         total,
         method,
@@ -334,6 +367,7 @@ export default function POS() {
           updateQty={updateQty}
           clearCart={clearCart}
           subtotal={subtotal}
+          discountAmount={discountAmount}
           tax={tax}
           total={total}
           setIsCheckoutOpen={setIsCheckoutOpen}
@@ -348,16 +382,14 @@ export default function POS() {
       {/* Bottom Action Bar */}
       <div className="h-20 bg-white border-t border-slate-200 flex items-center justify-around px-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20 shrink-0">
         {[
-          {icon: '📄', label: 'New Bill (F1)', color: 'text-[#3E2723]'},
-          {icon: '🔍', label: 'Search Item (F4)'},
-          {icon: '🏷️', label: 'Apply Discount (F5)'},
-          {icon: '🗑️', label: 'Remove Item (Del)', color: 'text-red-500'},
-          {icon: '⏸️', label: 'Hold Bill (F6)', color: 'text-blue-500'},
-          {icon: '🕒', label: 'Recent Bills (F8)'},
-          {icon: '💵', label: 'Cash Drawer (F9)'},
-          {icon: '⌨️', label: 'Keyboard (F10)'}
+          {icon: '📄', label: 'New Bill (F1)', color: 'text-[#3E2723]', onClick: handleNewBill},
+          {icon: '🔍', label: 'Search Item (F4)', onClick: () => document.querySelector('input[placeholder="Search by product name, SKU, or scan barcode..."]')?.focus()},
+          {icon: '🏷️', label: 'Apply Discount (F5)', onClick: handleApplyDiscount},
+          {icon: '🗑️', label: 'Remove Item (Del)', color: 'text-red-500', onClick: () => alert('Please use the trash icon next to an item.')},
+          {icon: '🕒', label: 'Recent Bills (F8)', onClick: () => alert('Recent Bills feature coming soon!')},
+          {icon: '⌨️', label: 'Keyboard (F10)', onClick: () => alert('Virtual keyboard coming soon!')}
         ].map((item, i) => (
-          <button key={i} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-slate-50 min-w-[80px]">
+          <button key={i} onClick={item.onClick} className="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-slate-50 min-w-[80px]">
             <span className={`text-xl mb-1 ${item.color || 'text-slate-600'}`}>{item.icon}</span>
             <span className="text-[11px] font-semibold text-slate-700 whitespace-nowrap">{item.label}</span>
           </button>
