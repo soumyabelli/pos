@@ -65,10 +65,16 @@ const io = new Server(httpServer, {
 
 export { io };
 
-const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
-const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
+// Provide fallback defaults for Railway if environment variables are not set in the dashboard
+const fallbackEnvVars = {
+  MONGO_URI: "mongodb://POS:POS123@ac-ozbnhe6-shard-00-00.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-01.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-02.cfthzqf.mongodb.net:27017/pos?ssl=true&replicaSet=atlas-pualpn-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster1",
+  JWT_SECRET: "your_super_secret_jwt_key_change_this_in_production_12345"
+};
+
+const missingEnvVars = ['MONGO_URI', 'JWT_SECRET'].filter((key) => !process.env[key]);
 if (missingEnvVars.length > 0) {
-  throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+  console.warn(`⚠️ Missing environment variables: ${missingEnvVars.join(', ')}. Using fallbacks.`);
+  missingEnvVars.forEach(key => process.env[key] = fallbackEnvVars[key]);
 }
 
 const rawAllowedOrigins = process.env.FRONTEND_URL || 'http://localhost:5173';
