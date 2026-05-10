@@ -19,23 +19,6 @@ export default function ProductGrid({
   loadingInventory,
   inventoryError,
 }) {
-  const getCategoryIcon = (cat) => {
-    switch (cat) {
-      case "Coffee":
-        return "C";
-      case "Drinks":
-        return "D";
-      case "Food":
-        return "F";
-      case "Dessert":
-        return "S";
-      case "All":
-        return "*";
-      default:
-        return "#";
-    }
-  };
-
   return (
     <section className="flex min-w-0 flex-1 flex-col border-r border-[#d9c4b3]/50 bg-gradient-to-b from-[#fffaf5] to-[#f4e6d6] p-4 sm:p-6 lg:h-full lg:overflow-hidden">
       <header className="mb-4 rounded-2xl border border-[#d9c4b3]/70 bg-white/70 p-4 shadow-sm backdrop-blur-sm sm:p-5">

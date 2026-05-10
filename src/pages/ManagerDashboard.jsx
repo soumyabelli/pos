@@ -46,7 +46,7 @@ export default function ManagerDashboard() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setWorkers(res.data);
-    } catch (err) {
+    } catch (_) {
       console.error('Failed to fetch workers');
     }
   };
@@ -68,8 +68,8 @@ export default function ManagerDashboard() {
       });
       setShowForm(false);
       fetchTasks();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create task');
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to create task');
     }
   };
 
@@ -80,7 +80,7 @@ export default function ManagerDashboard() {
           headers: { Authorization: `Bearer ${token}` }
         });
         fetchTasks();
-      } catch (err) {
+      } catch (_) {
         setError('Failed to delete task');
       }
     }
