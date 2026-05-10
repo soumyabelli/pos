@@ -11,6 +11,11 @@ function normalizeRole(inputRole) {
   return 'user';
 }
 
+function normalizeWorkerRole(inputRole) {
+  const role = String(inputRole || 'user').toLowerCase();
+  return role === 'worker' ? 'worker' : 'user';
+}
+
 // Get all users (Admin only)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
   try {
@@ -26,6 +31,52 @@ router.get('/workers/list', authMiddleware, managerOrAdmin, async (req, res) => 
   try {
     const workers = await User.find({ role: { $in: ['worker', 'user'] }, isActive: true }).select('name username email role store');
     res.json(workers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create worker/employee (Manager/Admin)
+// - Managers can ONLY create role=user/worker
+// - Admins can also use this endpoint, but still restricted to user/worker
+router.post('/workers', authMiddleware, managerOrAdmin, async (req, res) => {
+  try {
+    const { name, username, email, password, role, store, isActive, subRole, shift } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email and password are required' });
+    }
+
+    const normalizedEmail = String(email).toLowerCase().trim();
+    const derivedUsername = String(username || normalizedEmail.split('@')[0] || '')
+      .toLowerCase()
+      .trim();
+
+    if (!derivedUsername) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email: normalizedEmail }, { username: derivedUsername }]
+    });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email or username already registered' });
+    }
+
+    const created = await User.create({
+      name,
+      username: derivedUsername,
+      email: normalizedEmail,
+      password,
+      role: normalizeWorkerRole(role),
+      subRole: subRole || undefined,
+      shift: shift || undefined,
+      store: store || 'Main Store',
+      isActive: typeof isActive === 'boolean' ? isActive : true
+    });
+
+    const sanitized = await User.findById(created._id).select('-password');
+    res.status(201).json({ message: 'Employee created', user: sanitized });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
