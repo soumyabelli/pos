@@ -10,7 +10,7 @@ import ManagerLayout from "./manager/components/ManagerLayout";
 import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
 import ManagerEmployeesPage from "./manager/pages/ManagerEmployeesPage";
 import ManagerPlaceholder from "./manager/pages/ManagerPlaceholder";
-import { Users, Package, FileText, Clock, FileBarChart, Settings } from "lucide-react";
+import { Package, FileText, Clock, FileBarChart, Settings } from "lucide-react";
 
 import AdminLayout from "./admin/components/AdminLayout";
 import DashboardPage from "./admin/pages/DashboardPage";

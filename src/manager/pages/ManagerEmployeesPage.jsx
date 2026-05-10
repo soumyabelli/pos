@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import axios from "axios";
-import { BASE_URL } from "../../../config/api";
+import { API_BASE_URL } from "../../config/api";
 
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
@@ -27,7 +27,7 @@ export default function ManagerEmployeesPage() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(`${BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.get(`${API_BASE_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
       // Only show users/workers to the manager (or all if needed)
       setUsers(res.data.filter(u => u.role !== 'admin'));
     } catch (err) {
@@ -45,7 +45,7 @@ export default function ManagerEmployeesPage() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `${BASE_URL}/api/users`,
+        `${API_BASE_URL}/api/users`,
         { ...form, isActive: form.status === "Active" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -61,7 +61,7 @@ export default function ManagerEmployeesPage() {
     if (!window.confirm("Are you sure you want to delete this employee?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${BASE_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${API_BASE_URL}/api/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       fetchUsers();
     } catch (err) {
       console.error(err);
