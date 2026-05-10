@@ -2,16 +2,18 @@ import express from 'express';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import { authMiddleware, managerOrAdmin } from '../middleware/auth.js';
+import { io } from '../server.js';
+import { invalidateCache } from '../middleware/cache.js';
 
 const router = express.Router();
 
 function normalizePhone(phone) {
-  return String(phone || '').replace(/\D/g, '');
+  return String(phone || '').replaceAll(/\D/g, '');
 }
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName, customerPhone } = req.body;
+    const { items = [], subtotal = 0, tax = 0, paymentMethod, customerName, customerPhone, store = 'Main Store' } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Order must include at least one item' });
@@ -69,9 +71,21 @@ router.post('/', authMiddleware, async (req, res) => {
       });
     }
 
+    // Update inventory and track changes for broadcasting
+    const inventoryUpdates = [];
     for (const line of resolvedItems) {
       line.dbProduct.stock -= line.qty;
+      
+      // Update sales velocity for forecasting
+      line.dbProduct.monthlySalesVelocity = 
+        (line.dbProduct.monthlySalesVelocity || 0) + line.qty;
+      
       await line.dbProduct.save();
+      inventoryUpdates.push({
+        sku: line.sku,
+        newStock: line.dbProduct.stock,
+        product: line.productName
+      });
     }
 
     const normalizedItems = resolvedItems.map((line) => ({
@@ -93,10 +107,29 @@ router.post('/', authMiddleware, async (req, res) => {
       customerName: String(customerName).trim(),
       customerPhone: normalizedPhone,
       cashier: req.user.id,
-      store: 'Main Store'
+      store: store
     });
 
     await order.save();
+
+    // 🔴 Broadcast real-time inventory update
+    io.to('inventory_channel').emit('inventory:updated', {
+      timestamp: new Date(),
+      updates: inventoryUpdates,
+      order: { orderId, totalAmount, itemsCount: items.length }
+    });
+
+    // Broadcast new order to orders channel
+    io.to('orders_channel').emit('order:created', {
+      orderId,
+      store,
+      totalAmount,
+      timestamp: new Date()
+    });
+
+    // Invalidate product cache
+    await invalidateCache('cache:/api/products*');
+
     res.status(201).json({ message: 'Order created', order });
   } catch (error) {
     res.status(500).json({ error: error.message });

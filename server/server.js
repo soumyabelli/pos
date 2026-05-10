@@ -3,6 +3,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { createServer } from 'node:http';
+import { Server } from 'socket.io';
+import { createClient } from 'redis';
 import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
 import orderRoutes from './routes/orders.js';
@@ -10,17 +13,46 @@ import productRoutes from './routes/products.js';
 import settingRoutes from './routes/settings.js';
 import taskRoutes from './routes/tasks.js';
 import userRoutes from './routes/users.js';
+import analyticsRoutes from './routes/analytics.js';
+import storesRoutes from './routes/stores.js';
 import Category from './models/Category.js';
 import Product from './models/Product.js';
 import Setting from './models/Setting.js';
 import User from './models/User.js';
+import { cacheMiddleware } from './middleware/cache.js';
 
 console.log("🚀 SERVER.JS IS RUNNING");
 
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Redis Setup
+const redisClient = createClient({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379
+});
+
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
+try {
+  await redisClient.connect();
+} catch (err) {
+  console.log('Redis connection error:', err);
+}
+
+export { redisClient };
+
+// Socket.IO Setup
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  }
+});
+
+export { io };
 
 const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
@@ -31,7 +63,7 @@ if (missingEnvVars.length > 0) {
 const rawAllowedOrigins = process.env.FRONTEND_URL || 'http://localhost:5173';
 const allowedOrigins = rawAllowedOrigins
   .split(',')
-  .map((origin) => origin.trim().replace(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
+  .map((origin) => origin.trim().replaceAll(/^['"]|['"]$/g, '').replace(/\/+$/, ''))
   .filter(Boolean);
 
 if (process.env.VERCEL_URL) {
@@ -66,10 +98,12 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 // Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
-app.options(/.*/, cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
+try {
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log('MongoDB connected');
+} catch (err) {
+  console.error('MongoDB connection error:', err);
+}
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
@@ -238,12 +272,14 @@ mongoose.connection.once('open', async () => {
 });
 
 app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api/categories', cacheMiddleware(600), categoryRoutes);
+app.use('/api/products', cacheMiddleware(600), productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/stores', storesRoutes);
 
 app.get('/', (req, res) => {
   res.json({
@@ -267,8 +303,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
+// Socket.IO Connection Handler
+io.on('connection', (socket) => {
+  console.log(`🔌 User connected: ${socket.id}`);
+  
+  socket.on('subscribe_inventory', () => {
+    socket.join('inventory_channel');
+  });
+  
+  socket.on('subscribe_orders', () => {
+    socket.join('orders_channel');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log(`❌ User disconnected: ${socket.id}`);
+  });
+});
+
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✅ Redis connected`);
+  console.log(`✅ Socket.IO enabled`);
 });

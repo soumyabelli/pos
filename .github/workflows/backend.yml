@@ -1,0 +1,96 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'server/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'server/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint and Test
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'server/package-lock.json'
+      
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci
+      
+      - name: Run syntax check
+        run: |
+          cd server
+          node -c server.js
+      
+      - name: Check environment requirements
+        run: |
+          cd server
+          node -e "require('dotenv').config(); const required = ['MONGO_URI', 'JWT_SECRET']; const missing = required.filter(k => !process.env[k]); if(missing.length) throw new Error('Missing: ' + missing.join(', '))"
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Push Docker Image
+    needs: lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: false
+          tags: urbancrust-pos-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Checks
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run npm audit
+        run: |
+          cd server
+          npm audit --audit-level=moderate || true
+      
+      - name: Check for sensitive files
+        run: |
+          if grep -r "password\|secret\|key" server/.env.* 2>/dev/null | grep -v ".env.example"; then
+            echo "⚠️ Sensitive data detected in environment files!"
+            exit 1
+          fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [lint, build, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Railway
+        run: |
+          echo "Deployment to Railway would happen here"
+          echo "Using Railway CLI with API token from secrets"
+      
+      - name: Health check
+        run: |
+          echo "Pinging health endpoint would happen here"

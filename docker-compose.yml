@@ -1,13 +1,109 @@
-version: "3"
-services:
-  mongodb:
-    image: mongo
-    container_name: pos-mongodb
-    ports:
-      - "27017:27017"
+version: '3.8'
 
-  redis:
-    image: redis
-    container_name: pos-redis
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: urbancrust-mongodb
     ports:
-      - "6379:6379"
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: urbancrust
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - urbancrust-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: urbancrust-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - urbancrust-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Node.js Backend
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: urbancrust-backend
+    ports:
+      - '5000:5000'
+    environment:
+      NODE_ENV: development
+      MONGO_URI: mongodb://root:password@mongodb:27017/urbancrust?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_key_change_this}
+      PORT: 5000
+      FRONTEND_URL: http://localhost:5173,http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    networks:
+      - urbancrust-network
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # Mongo Express (MongoDB Admin UI)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: urbancrust-mongo-express
+    ports:
+      - '8081:8081'
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:password@mongodb:27017/
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+    depends_on:
+      - mongodb
+    networks:
+      - urbancrust-network
+
+  # Redis Commander (Redis Admin UI)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: urbancrust-redis-commander
+    ports:
+      - '8082:8081'
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - urbancrust-network
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+  redis_data:
+
+networks:
+  urbancrust-network:
+    driver: bridge
