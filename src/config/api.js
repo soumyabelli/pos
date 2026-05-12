@@ -10,15 +10,10 @@ function resolveFallbackBaseUrl() {
   return "";
 }
 
-function shouldForceVercelProxy() {
-  if (import.meta.env.DEV || typeof window === "undefined") return false;
-  return /\.vercel\.app$/i.test(window.location.hostname);
-}
-
 const fallbackUrl = resolveFallbackBaseUrl();
-const resolvedBaseUrl = shouldForceVercelProxy()
-  ? ""
-  : (configuredBaseUrl || fallbackUrl);
+// Always prefer an explicitly configured API URL.
+// Only fall back to same-origin proxy routes when no URL is configured.
+const resolvedBaseUrl = configuredBaseUrl || fallbackUrl;
 
 export const API_BASE_URL = resolvedBaseUrl.replace(/\/+$/, "");
 
