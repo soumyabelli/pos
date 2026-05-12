@@ -46,13 +46,20 @@ const redisConfig = process.env.REDIS_URL
 
 const redisClient = createClient(redisConfig || { socket: { host: '127.0.0.1', port: 6379 } });
 
-redisClient.on('error', () => {
-  // Suppress repeated error spam — just mark as not connected
+redisClient.on('error', (err) => {
+  const message = err?.message || 'unknown error';
   if (redisConnected) {
     redisConnected = false;
-    console.warn('⚠️  Redis disconnected — running without cache.');
+    console.warn(`⚠️ Redis disconnected (${message}) — running without cache.`);
+  } else {
+    console.warn(`⚠️ Redis error before connection established: ${message}`);
   }
 });
+
+const redisTarget = redisConfig
+  ? redisConfig.url || `${redisConfig.socket.host}:${redisConfig.socket.port}`
+  : '127.0.0.1:6379';
+console.log(`ℹ️ Connecting to Redis at ${redisTarget}`);
 
 if (redisConfig) {
   try {
@@ -62,11 +69,20 @@ if (redisConfig) {
     ]);
     redisConnected = true;
     console.log('✅ Redis connected');
-  } catch {
-    console.warn('⚠️  Redis unavailable — caching disabled, server continues.');
+  } catch (err) {
+    console.warn(`⚠️ Redis unavailable (${err?.message || 'connection failure'}) — caching disabled, server continues.`);
   }
 } else {
-  console.log('ℹ️ Redis not configured — caching disabled.');
+  try {
+    await Promise.race([
+      redisClient.connect(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connect timeout')), 3000))
+    ]);
+    redisConnected = true;
+    console.log('✅ Redis connected');
+  } catch (err) {
+    console.warn(`⚠️ Redis unavailable (${err?.message || 'connection failure'}) — caching disabled, server continues.`);
+  }
 }
 
 export { redisClient, redisConnected };
@@ -142,18 +158,21 @@ async function connectMongo() {
     console.log('MongoDB connected');
     return;
   } catch (err) {
-    const isSrvDnsFailure = err?.code === 'ECONNREFUSED' && String(err?.syscall || '').includes('querySrv');
-    if (isSrvDnsFailure) {
+    console.warn(`⚠️ MongoDB unavailable (${err.code || 'CONNECT_ERROR'}): ${err.message}`);
+
+    const fallback = fallbackEnvVars.MONGO_URI;
+    if (fallback && process.env.MONGO_URI !== fallback) {
+      console.log('Attempting fallback MongoDB URI...');
       try {
-        await mongoose.connect(fallbackEnvVars.MONGO_URI);
+        await mongoose.connect(fallback);
         console.log('MongoDB connected (fallback URI)');
         return;
       } catch (fallbackErr) {
-        console.warn(`⚠️ MongoDB unavailable (${fallbackErr.code || 'CONNECT_ERROR'}). Running with limited in-memory settings mode.`);
-        return;
+        console.warn(`⚠️ MongoDB fallback failed (${fallbackErr.code || 'CONNECT_ERROR'}): ${fallbackErr.message}`);
       }
     }
-    console.warn(`⚠️ MongoDB unavailable (${err.code || 'CONNECT_ERROR'}). Running with limited in-memory settings mode.`);
+
+    console.warn('⚠️ MongoDB not connected. Running with limited in-memory settings mode.');
   }
 }
 

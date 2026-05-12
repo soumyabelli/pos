@@ -124,7 +124,6 @@ productSchema.virtual('totalStock').get(function() {
 
 // Index for performance optimization
 productSchema.index({ category: 1, isActive: 1 });
-productSchema.index({ sku: 1 });
 productSchema.index({ barcode: 1 });
 
 export default mongoose.model('Product', productSchema);
