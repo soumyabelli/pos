@@ -4,7 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { createServer } from 'node:http';
-import { Server } from 'socket.io';
 import { createClient } from 'redis';
 import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
@@ -25,9 +24,17 @@ console.log("🚀 SERVER.JS IS RUNNING");
 
 dotenv.config();
 
+let SocketIOServer = null;
+try {
+  const socketIoModule = await import('socket.io');
+  SocketIOServer = socketIoModule.Server;
+} catch {
+  console.warn('⚠️ socket.io package missing. Realtime features are disabled until dependencies are fixed.');
+}
+
 const app = express();
 const httpServer = createServer(app);
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 // Redis Setup — fully optional, server runs fine without it
 let redisConnected = false;
@@ -65,12 +72,14 @@ if (redisConfig) {
 export { redisClient, redisConnected };
 
 // Socket.IO Setup
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    methods: ['GET', 'POST']
-  }
-});
+const io = SocketIOServer
+  ? new SocketIOServer(httpServer, {
+      cors: {
+        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+        methods: ['GET', 'POST']
+      }
+    })
+  : { on() {}, emit() {} };
 
 export { io };
 
@@ -127,12 +136,28 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
-try {
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log('MongoDB connected');
-} catch (err) {
-  console.error('MongoDB connection error:', err);
+async function connectMongo() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB connected');
+    return;
+  } catch (err) {
+    const isSrvDnsFailure = err?.code === 'ECONNREFUSED' && String(err?.syscall || '').includes('querySrv');
+    if (isSrvDnsFailure) {
+      try {
+        await mongoose.connect(fallbackEnvVars.MONGO_URI);
+        console.log('MongoDB connected (fallback URI)');
+        return;
+      } catch (fallbackErr) {
+        console.warn(`⚠️ MongoDB unavailable (${fallbackErr.code || 'CONNECT_ERROR'}). Running with limited in-memory settings mode.`);
+        return;
+      }
+    }
+    console.warn(`⚠️ MongoDB unavailable (${err.code || 'CONNECT_ERROR'}). Running with limited in-memory settings mode.`);
+  }
 }
+
+await connectMongo();
 // (duplicate mongoose.connect removed — already called above with await)
 
 async function ensureDefaultUsers() {
@@ -330,20 +355,31 @@ app.use((err, req, res, next) => {
 });
 
 // Socket.IO Connection Handler
-io.on('connection', (socket) => {
-  console.log(`🔌 User connected: ${socket.id}`);
-  
-  socket.on('subscribe_inventory', () => {
-    socket.join('inventory_channel');
+if (SocketIOServer) {
+  io.on('connection', (socket) => {
+    console.log(`🔌 User connected: ${socket.id}`);
+    
+    socket.on('subscribe_inventory', () => {
+      socket.join('inventory_channel');
+    });
+    
+    socket.on('subscribe_orders', () => {
+      socket.join('orders_channel');
+    });
+    
+    socket.on('disconnect', () => {
+      console.log(`❌ User disconnected: ${socket.id}`);
+    });
   });
-  
-  socket.on('subscribe_orders', () => {
-    socket.join('orders_channel');
-  });
-  
-  socket.on('disconnect', () => {
-    console.log(`❌ User disconnected: ${socket.id}`);
-  });
+}
+
+httpServer.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use. Stop the other Node process and restart.`);
+    process.exit(1);
+  }
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
 
 httpServer.listen(PORT, () => {
@@ -351,5 +387,5 @@ httpServer.listen(PORT, () => {
   console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
   console.log(`${redisConnected ? '✅' : '⚠️ '} Redis: ${redisConnected ? 'connected' : 'disabled (no Redis available)'}`);
-  console.log(`✅ Socket.IO enabled`);
+  console.log(`${SocketIOServer ? '✅' : '⚠️ '} Socket.IO: ${SocketIOServer ? 'enabled' : 'disabled (package missing)'}`);
 });

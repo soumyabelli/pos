@@ -1,10 +1,24 @@
 import express from 'express';
 import Setting from '../models/Setting.js';
+import mongoose from 'mongoose';
 import { authMiddleware, managerOrAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+const memorySettings = {
+  storeName: 'Urban Crust Main Store',
+  currency: 'Rs',
+  taxRate: 8.5
+};
+
+function hasMongoConnection() {
+  return mongoose.connection.readyState === 1;
+}
 
 async function getOrCreateSettings() {
+  if (!hasMongoConnection()) {
+    return { ...memorySettings };
+  }
+
   let settings = await Setting.findOne();
   if (!settings) {
     settings = await Setting.create({});
@@ -30,6 +44,14 @@ router.put('/', authMiddleware, managerOrAdmin, async (req, res) => {
       currency: req.body.currency ?? settings.currency,
       taxRate: Number(req.body.taxRate ?? settings.taxRate)
     };
+
+    if (!hasMongoConnection()) {
+      memorySettings.storeName = nextSettings.storeName;
+      memorySettings.currency = nextSettings.currency;
+      memorySettings.taxRate = nextSettings.taxRate;
+      res.json({ message: 'Settings updated (in-memory mode)', settings: { ...memorySettings } });
+      return;
+    }
 
     const updated = await Setting.findByIdAndUpdate(settings._id, nextSettings, { new: true });
     res.json({ message: 'Settings updated', settings: updated });
