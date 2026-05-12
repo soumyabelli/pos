@@ -10,6 +10,7 @@ export default function Login() {
   const [loginMode, setLoginMode] = useState("employee");
   const [employees, setEmployees] = useState([]);
   const [selectedEmployee, setSelectedEmployee] = useState("");
+  const [employeeLoading, setEmployeeLoading] = useState(false);
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -22,11 +23,23 @@ export default function Login() {
   }, [loginMode]);
 
   const fetchEmployees = async () => {
+    setEmployeeLoading(true);
     try {
       const res = await axios.get(`${API_BASE_URL}/api/auth/employees`);
-      setEmployees(res.data);
+      const employeeData = Array.isArray(res.data) ? res.data : [];
+      setEmployees(employeeData);
+      if (employeeData.length === 1) {
+        setSelectedEmployee(employeeData[0].username);
+      }
+      if (employeeData.length === 0) {
+        setError('No cashier accounts available. Please ask admin to create one.');
+      }
     } catch (err) {
       console.error("Failed to load employee list:", err);
+      setError("Unable to load employees. Check backend connection.");
+      setEmployees([]);
+    } finally {
+      setEmployeeLoading(false);
     }
   };
 
@@ -155,15 +168,22 @@ export default function Login() {
                 value={selectedEmployee}
                 onChange={(e) => setSelectedEmployee(e.target.value)}
                 required
-                disabled={loading}
+                disabled={loading || employeeLoading}
               >
-                <option value="" disabled>Select your name...</option>
+                <option value="" disabled>
+                  {employeeLoading ? "Loading staff..." : "Select your name..."}
+                </option>
                 {employees.map((emp) => (
                   <option key={emp._id} value={emp.username}>
                     {emp.name} ({emp.subRole || "Staff"})
                   </option>
                 ))}
               </select>
+              {employees.length === 0 && !employeeLoading && (
+                <p style={{ marginTop: 8, color: "#b45309", fontSize: 13 }}>
+                  No cashier accounts found. Please contact your admin.
+                </p>
+              )}
             </div>
           ) : (
             <input
