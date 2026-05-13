@@ -2,7 +2,24 @@ import express from 'express';
 import User from '../models/User.js';
 import { authMiddleware, adminOnly, managerOrAdmin } from '../middleware/auth.js';
 
+
 const router = express.Router();
+
+// Public route for POS login employee list
+router.get('/login-users', async (req, res) => {
+  try {
+    const users = await User.find(
+      {
+        isActive: true,
+        role: { $in: ['user', 'worker', 'manager', 'admin'] }
+      }
+    ).select('name username role');
+
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 function normalizeRole(inputRole) {
   const role = String(inputRole || 'user').toLowerCase();
