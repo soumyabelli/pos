@@ -8,16 +8,23 @@ const router = express.Router();
 // Public route for POS login employee list
 router.get('/login-users', async (req, res) => {
   try {
-    const users = await User.find(
-      {
-        isActive: true,
-        role: { $in: ['user', 'worker', 'manager', 'admin'] }
-      }
-    ).select('name username role');
+    console.log("GET /api/users/login-users");
+
+    const users = await User.find().select(
+      'name username role'
+    );
+
+    console.log("Users found:", users.length);
 
     res.json(users);
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("login-users error:", error);
+
+    res.status(500).json({
+      error: error.message,
+      stack: error.stack
+    });
   }
 });
 
