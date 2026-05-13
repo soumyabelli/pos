@@ -34,7 +34,11 @@ try {
 
 const app = express();
 const httpServer = createServer(app);
-const PORT = Number(process.env.PORT) || 5000;
+const REQUESTED_PORT = Number(process.env.PORT) || 5000;
+const isProduction = (process.env.NODE_ENV || 'development') === 'production';
+const autoPortFallback =
+  !isProduction && (process.env.AUTO_PORT_FALLBACK || 'true').toLowerCase() === 'true';
+const portRetryCount = Number(process.env.PORT_RETRY_COUNT) || 10;
 
 // Redis Setup — fully optional, server runs fine without it
 let redisConnected = false;
@@ -101,7 +105,7 @@ export { io };
 
 // Provide fallback defaults for Railway if environment variables are not set in the dashboard
 const fallbackEnvVars = {
-  MONGO_URI: "mongodb://POS:POS123@ac-ozbnhe6-shard-00-00.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-01.cfthzqf.mongodb.net:27017,ac-ozbnhe6-shard-00-02.cfthzqf.mongodb.net:27017/pos?ssl=true&replicaSet=atlas-pualpn-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster1",
+  MONGO_URI: "mongodb://localhost:27017/pos",
   JWT_SECRET: "your_super_secret_jwt_key_change_this_in_production_12345"
 };
 
@@ -153,8 +157,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
 async function connectMongo() {
+  const connectTimeout = 5000; // 5 second timeout per connection attempt
+  
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await Promise.race([
+      mongoose.connect(process.env.MONGO_URI),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), connectTimeout))
+    ]);
     console.log('MongoDB connected');
     return;
   } catch (err) {
@@ -164,7 +173,10 @@ async function connectMongo() {
     if (fallback && process.env.MONGO_URI !== fallback) {
       console.log('Attempting fallback MongoDB URI...');
       try {
-        await mongoose.connect(fallback);
+        await Promise.race([
+          mongoose.connect(fallback),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), connectTimeout))
+        ]);
         console.log('MongoDB connected (fallback URI)');
         return;
       } catch (fallbackErr) {
@@ -392,19 +404,36 @@ if (SocketIOServer) {
   });
 }
 
-httpServer.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use. Stop the other Node process and restart.`);
-    process.exit(1);
-  }
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+function startServer(port, retriesLeft) {
+  httpServer.once('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      if (autoPortFallback && retriesLeft > 0) {
+        const nextPort = port + 1;
+        console.warn(`⚠️ Port ${port} is in use. Retrying on ${nextPort}...`);
+        startServer(nextPort, retriesLeft - 1);
+        return;
+      }
+      const helpText = autoPortFallback
+        ? `Tried ${portRetryCount + 1} ports starting at ${REQUESTED_PORT}`
+        : 'Auto fallback is disabled';
+      console.error(`❌ Port ${port} is already in use. ${helpText}.`);
+      process.exit(1);
+    }
 
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`${redisConnected ? '✅' : '⚠️ '} Redis: ${redisConnected ? 'connected' : 'disabled (no Redis available)'}`);
-  console.log(`${SocketIOServer ? '✅' : '⚠️ '} Socket.IO: ${SocketIOServer ? 'enabled' : 'disabled (package missing)'}`);
-});
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
+
+  httpServer.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+    if (port !== REQUESTED_PORT) {
+      console.log(`ℹ️ Requested port ${REQUESTED_PORT} was busy. Using ${port} in dev mode.`);
+    }
+    console.log(`Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+    console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`${redisConnected ? '✅' : '⚠️ '} Redis: ${redisConnected ? 'connected' : 'disabled (no Redis available)'}`);
+    console.log(`${SocketIOServer ? '✅' : '⚠️ '} Socket.IO: ${SocketIOServer ? 'enabled' : 'disabled (package missing)'}`);
+  });
+}
+
+startServer(REQUESTED_PORT, portRetryCount);
