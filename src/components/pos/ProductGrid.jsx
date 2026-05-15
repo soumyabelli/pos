@@ -1,9 +1,5 @@
-import { ScanLine, Search } from "lucide-react";
-
-function isImageUrl(value) {
-  if (typeof value !== "string") return false;
-  return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("data:image");
-}
+import { Search, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductGrid({
   search,
@@ -19,146 +15,139 @@ export default function ProductGrid({
   loadingInventory,
   inventoryError,
 }) {
-  return (
-    <section className="flex min-w-0 flex-1 flex-col border-r border-[#d9c4b3]/50 bg-gradient-to-b from-[#fffaf5] to-[#f4e6d6] p-4 sm:p-6 lg:h-full lg:overflow-hidden">
-      <header className="mb-4 rounded-2xl border border-[#d9c4b3]/70 bg-white/70 p-4 shadow-sm backdrop-blur-sm sm:p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-content-center rounded-xl bg-gradient-to-br from-[#d4853d] to-[#6f4e37] text-lg text-white shadow-sm">
-              UC
-            </div>
-            <div>
-              <h1 className="text-2xl font-black leading-tight tracking-tight text-[#3e2723] sm:text-3xl">Urban Crust POS</h1>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#8b6f47]">Counter Terminal</p>
-            </div>
-          </div>
+  const navigate = useNavigate();
 
-          <div className="text-right">
-            <p className="text-sm font-bold text-[#6f4e37]">
-              {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-            </p>
-            <p className="text-xs font-medium text-[#8b6f47]">
-              {new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-            </p>
+  return (
+    <section className="flex flex-col flex-[3] border-r border-slate-200 bg-white lg:h-full lg:overflow-hidden relative z-10">
+      {/* Top Navbar */}
+      <header className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-4 shrink-0">
+        <div className="flex items-center gap-2 text-[#3E2723]">
+          <span className="font-black text-xl tracking-tighter">Urban<span className="text-[#8B6F47]"> Crust</span> POS</span>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm font-semibold text-slate-700">
+          <div className="border border-slate-200 rounded px-3 py-1.5 bg-slate-50">
+            Cashier: <span className="text-slate-900">Ramesh</span>
+          </div>
+          <div className="border border-slate-200 rounded px-3 py-1.5 bg-slate-50">
+            Terminal: <span className="text-slate-900">DM001</span>
+          </div>
+          <div className="hidden md:block">
+            {new Date().toLocaleDateString("en-GB", {day: "numeric", month: "short", year: "numeric"})} | {new Date().toLocaleTimeString("en-US", {hour: "2-digit", minute: "2-digit"})}
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3">
-          <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-            <label className="relative block">
-              <Search size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f47]" />
-              <input
-                type="text"
-                placeholder="Scan SKU / barcode or search products"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="h-11 w-full rounded-xl border border-[#d9c4b3] bg-white px-10 text-sm font-semibold text-[#2c1810] outline-none transition focus:border-[#d4853d] focus:ring-4 focus:ring-[#d4853d]/20"
-                autoFocus
-              />
-            </label>
-            <button
-              type="button"
-              onClick={onOpenScanner}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#d9c4b3] bg-white px-3 text-xs font-black uppercase tracking-wide text-[#6f4e37] transition hover:border-[#d4853d] hover:bg-[#fff7ef]"
-            >
-              <ScanLine size={16} />
-              Camera Scan
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1.5 border border-slate-200 text-slate-700 font-semibold rounded bg-slate-50 hover:bg-slate-100 text-sm">
+            Hold Bill (F6)
+          </button>
+          <button className="px-3 py-1.5 border border-slate-200 text-slate-700 font-semibold rounded bg-slate-50 hover:bg-slate-100 text-sm">
+            More (F12)
+          </button>
+          <button 
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              navigate('/login');
+            }}
+            className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-sm transition-colors flex items-center gap-2"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
-          {scanNotice?.message && (
-            <p
-              className={`rounded-lg border px-3 py-2 text-xs font-semibold ${
-                scanNotice.type === "success"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
-              }`}
-            >
-              {scanNotice.message}
-            </p>
-          )}
+      <div className="p-4 flex flex-col h-full overflow-hidden">
+        {/* Search */}
+        <div className="flex gap-2 mb-4">
+          <label className="relative flex-1">
+            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search product"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="h-12 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 text-slate-800 outline-none focus:border-[#8B6F47] focus:ring-1 focus:ring-[#8B6F47] text-lg shadow-sm"
+              autoFocus
+            />
+          </label>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-4 overflow-x-auto rounded-3xl border border-[#d9c4b3]/40 bg-[#f7efe2]/70 p-3 shadow-sm shadow-[#8f6b4b]/10 backdrop-blur-sm pb-3">
+        {scanNotice?.message && (
+          <p className={`mb-4 rounded-lg px-3 py-2 text-sm font-semibold ${
+            scanNotice.type === "success" ? "bg-[#8B6F47]/10 text-[#3E2723] border border-[#8B6F47]/20" : "bg-red-50 text-red-700 border border-red-200"
+          }`}>
+            {scanNotice.message}
+          </p>
+        )}
+
+        {/* Categories */}
+        <div className="mb-4">
+          <h3 className="font-bold text-slate-800 mb-2">Quick Categories</h3>
+          <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={`min-w-max whitespace-nowrap rounded-full border px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#5d4328] shadow-[0_14px_40px_-26px_rgba(15,23,42,0.25)] transition duration-200 ease-out backdrop-blur-sm ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
                   category === cat
-                    ? "border-[#f3d0ab] bg-white/90 text-[#3d2208] shadow-[0_20px_65px_-30px_rgba(212,133,61,0.45)]"
-                    : "border-white/40 bg-white/20 hover:border-white/70 hover:bg-white/50 hover:text-[#3d2208]"
+                    ? "bg-[#3E2723] text-white border-[#3E2723] shadow-md"
+                    : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
                 }`}
               >
-                {cat}
+                {cat === 'All' ? 'All Items' : cat}
               </button>
             ))}
           </div>
         </div>
-      </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:pr-2">
-        {inventoryError && (
-          <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">
-            {inventoryError}
+        {/* Items List (Table format like mock) */}
+        <div className="flex-1 overflow-hidden flex flex-col border border-slate-200 rounded-lg">
+          <h3 className="font-bold text-slate-800 p-3 bg-slate-50 border-b border-slate-200">Recent Items</h3>
+          
+          {inventoryError && <div className="p-3 text-sm text-red-600">{inventoryError}</div>}
+          {loadingInventory && <div className="p-3 text-sm text-slate-500">Loading products...</div>}
+
+          <div className="flex-1 overflow-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-white sticky top-0 border-b border-slate-200 shadow-sm">
+                <tr className="text-slate-500 font-semibold">
+                  <th className="py-3 px-4 font-semibold w-12">#</th>
+                  <th className="py-3 px-4 font-semibold">Item Name</th>
+                  <th className="py-3 px-4 font-semibold text-right">MRP</th>
+                  <th className="py-3 px-4 font-semibold text-right">Price</th>
+                  <th className="py-3 px-4 font-semibold text-center w-16"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product, idx) => {
+                  const outOfStock = product.stock <= 0;
+                  return (
+                    <tr key={product._id || product.sku} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="py-3 px-4 text-slate-500">{idx + 1}</td>
+                      <td className="py-3 px-4 font-medium text-slate-800">{product.product}</td>
+                      <td className="py-3 px-4 text-right text-slate-500 line-through">₹{Number(product.price * 1.1).toFixed(2)}</td>
+                      <td className="py-3 px-4 text-right font-bold text-slate-800">₹{Number(product.price).toFixed(2)}</td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => !outOfStock && addToCart(product)}
+                          disabled={outOfStock}
+                          className={`w-8 h-8 rounded flex items-center justify-center border font-bold text-lg ${
+                            outOfStock 
+                              ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                              : "bg-[#8B6F47]/10 text-[#8B6F47] border-[#8B6F47]/20 hover:bg-[#8B6F47]/20 hover:text-[#3E2723]"
+                          }`}
+                        >
+                          +
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
-        {loadingInventory && (
-          <div className="mb-3 rounded-xl border border-[#e8d8cb] bg-white/70 px-3 py-2 text-sm font-semibold text-[#6f4e37]">
-            Loading products...
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {filteredProducts.map((product) => {
-            const outOfStock = product.stock <= 0;
-            const useImageTag = isImageUrl(product.image);
-
-            return (
-              <button
-                key={product._id || product.sku}
-                onClick={() => !outOfStock && addToCart(product)}
-                disabled={outOfStock}
-                className={`group rounded-2xl border bg-white p-3 text-left shadow-sm transition ${
-                  outOfStock
-                    ? "cursor-not-allowed border-[#e8d8cb] opacity-55"
-                    : "cursor-pointer border-[#d9c4b3] hover:-translate-y-0.5 hover:border-[#d4853d] hover:shadow-md active:translate-y-0"
-                }`}
-              >
-                <div
-                  className={`mb-3 grid h-20 place-content-center overflow-hidden rounded-xl border text-2xl ${
-                    outOfStock ? "border-[#e6d8cb] bg-[#fbf4ec]" : "border-[#e0cbb9] bg-[#fff8f2]"
-                  }`}
-                >
-                  {useImageTag ? (
-                    <img src={product.image} alt={product.product} className="h-full w-full object-cover" />
-                  ) : (
-                    <span>{product.image || "Item"}</span>
-                  )}
-                </div>
-
-                <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#8b6f47]">{product.sku}</p>
-                <h3 className="mt-1 line-clamp-2 min-h-10 text-sm font-bold leading-tight text-[#2c1810]">{product.product}</h3>
-
-                <div className="mt-3 flex items-center justify-between border-t border-[#e9d7c8] pt-2">
-                  <span className={`text-lg font-black ${outOfStock ? "text-[#ef4444]" : "text-[#d4853d]"}`}>
-                    Rs {Number(product.price || 0).toFixed(0)}
-                  </span>
-                  <span
-                    className={`rounded-md px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide ${
-                      outOfStock
-                        ? "bg-red-100 text-red-700"
-                        : product.stock <= 3
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
-                    }`}
-                  >
-                    {outOfStock ? "Out" : `${product.stock} left`}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
         </div>
       </div>
     </section>
