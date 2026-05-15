@@ -11,8 +11,9 @@ import ManagerDashboardPage from "./manager/pages/ManagerDashboardPage";
 import ManagerEmployeesPage from "./manager/pages/ManagerEmployeesPage";
 import ManagerInventoryPage from "./manager/pages/ManagerInventoryPage";
 import ManagerBillingPage from "./manager/pages/ManagerBillingPage";
-import ManagerPlaceholder from "./manager/pages/ManagerPlaceholder";
-import { Clock, FileBarChart, Settings } from "lucide-react";
+import ManagerReportsPage from "./manager/pages/ManagerReportsPage";
+import ManagerShiftsPage from "./manager/pages/ManagerShiftsPage";
+import ManagerSettingsPage from "./manager/pages/ManagerSettingsPage";
 
 import AdminLayout from "./admin/components/AdminLayout";
 import DashboardPage from "./admin/pages/DashboardPage";
@@ -56,9 +57,9 @@ function App() {
           <Route path="employees" element={<ManagerEmployeesPage />} />
           <Route path="inventory" element={<ManagerInventoryPage />} />
           <Route path="billing" element={<ManagerBillingPage />} />
-          <Route path="shifts" element={<ManagerPlaceholder title="Shift Tracking" description="Monitor active shifts and hours." icon={Clock} />} />
-          <Route path="reports" element={<ManagerPlaceholder title="Branch Reports" description="Generate performance reports." icon={FileBarChart} />} />
-          <Route path="settings" element={<ManagerPlaceholder title="Local Settings" description="Configure branch-specific options." icon={Settings} />} />
+          <Route path="shifts" element={<ManagerShiftsPage />} />
+          <Route path="reports" element={<ManagerReportsPage />} />
+          <Route path="settings" element={<ManagerSettingsPage />} />
         </Route>
         
         <Route
