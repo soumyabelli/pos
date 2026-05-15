@@ -2,8 +2,8 @@ const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
 function resolveFallbackBaseUrl() {
   if (import.meta.env.DEV) {
-    // Development: local backend
-    return "http://localhost:5000";
+    // Development: local backend (try port 5001 first, then 5000)
+    return "http://localhost:5001";
   }
 
   // Production: Railway backend

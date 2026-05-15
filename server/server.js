@@ -94,18 +94,18 @@ export { redisClient, redisConnected };
 // Socket.IO Setup
 const io = SocketIOServer
   ? new SocketIOServer(httpServer, {
-      cors: {
-        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-        methods: ['GET', 'POST']
-      }
-    })
-  : { on() {}, emit() {} };
+    cors: {
+      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      methods: ['GET', 'POST']
+    }
+  })
+  : { on() { }, emit() { } };
 
 export { io };
 
 // Provide fallback defaults for Railway if environment variables are not set in the dashboard
 const fallbackEnvVars = {
-  MONGO_URI: "mongodb://localhost:27017/pos",
+  MONGO_URI: "mongodb://root:password@localhost:27017/urbancrust?authSource=admin",
   JWT_SECRET: "your_super_secret_jwt_key_change_this_in_production_12345"
 };
 
@@ -158,7 +158,7 @@ app.use(express.urlencoded({ extended: true }));
 // Express 5 no longer accepts '*' here; regex matches all preflight paths safely.
 async function connectMongo() {
   const connectTimeout = 5000; // 5 second timeout per connection attempt
-  
+
   try {
     await Promise.race([
       mongoose.connect(process.env.MONGO_URI),
@@ -389,15 +389,15 @@ app.use((err, req, res, next) => {
 if (SocketIOServer) {
   io.on('connection', (socket) => {
     console.log(`🔌 User connected: ${socket.id}`);
-    
+
     socket.on('subscribe_inventory', () => {
       socket.join('inventory_channel');
     });
-    
+
     socket.on('subscribe_orders', () => {
       socket.join('orders_channel');
     });
-    
+
     socket.on('disconnect', () => {
       console.log(`❌ User disconnected: ${socket.id}`);
     });
